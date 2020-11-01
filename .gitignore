@@ -130,3 +130,7 @@ dmypy.json
 
 # Mac spam
 .DS_Store
+
+.vscode
+data/
+predictions_training/
