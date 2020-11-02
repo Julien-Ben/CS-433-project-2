@@ -1,2 +1,2 @@
-model_checkpoint_path: "/tmp/segment_aerial_images/model.ckpt"
-all_model_checkpoint_paths: "/tmp/segment_aerial_images/model.ckpt"
+model_checkpoint_path: "model.ckpt"
+all_model_checkpoint_paths: "model.ckpt"
