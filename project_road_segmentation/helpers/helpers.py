@@ -2,6 +2,7 @@ import gzip
 import os
 import sys
 import urllib
+from tqdm import tqdm
 import matplotlib.image as mpimg
 from PIL import Image
 
@@ -39,7 +40,7 @@ def extract_data(filename, num_images):
     Values are rescaled from [0, 255] down to [-0.5, 0.5].
     """
     imgs = []
-    for i in range(1, num_images+1):
+    for i in tqdm(range(1, num_images+1)):
         imageid = "satImage_%.3d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
@@ -74,7 +75,7 @@ def value_to_class(v):
 def extract_labels(filename, num_images):
     """Extract the labels into a 1-hot matrix [image index, label index]."""
     gt_imgs = []
-    for i in range(1, num_images + 1):
+    for i in tqdm(range(1, num_images + 1)):
         imageid = "satImage_%.3d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
@@ -204,28 +205,31 @@ def get_prediction_with_groundtruth(model, filename, image_idx):
     imageid = "satImage_%.3d" % image_idx
     image_filename = filename + imageid + ".png"
     img = mpimg.imread(image_filename)
-
     img_prediction = get_prediction(model, img)
     cimg = concatenate_images(img, img_prediction)
-
     return cimg
 
 # Get prediction overlaid on the original image for given input file
 def get_prediction_with_overlay(model, filename, image_idx):
-
     imageid = "satImage_%.3d" % image_idx
     image_filename = filename + imageid + ".png"
     img = mpimg.imread(image_filename)
-
     img_prediction = get_prediction(model, img)
     oimg = make_img_overlay(img, img_prediction)
-
     return oimg
 
 def one_hot_to_scalar(one_hot_labels):
+    """
+    Convert one-hot encoded labels to a one-dimensional array
+    Ex: [[0,1], [1,0]] becomes [1,0]
+    """
     return np.argmax(one_hot_labels, axis=1)
 
 def compute_confusion_matrix(y_truth, y_pred):
+    """
+    Compute the confusion matrix of the predicted labels.
+    Arguments are one-hot encoded
+    """
     y_truth_vec = one_hot_to_scalar(y_truth)
     y_pred_vec = one_hot_to_scalar(y_pred)
     TP = np.count_nonzero(y_pred_vec * y_truth_vec)
@@ -235,12 +239,19 @@ def compute_confusion_matrix(y_truth, y_pred):
     return TP, TN, FP, FN
 
 def F1_score(y_truth, y_pred):
+    """
+    Compute the F1 score. Arguments are one-hot encoded
+    """
     TP, TN, FP, FN = compute_confusion_matrix(y_truth, y_pred)
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
     return 2 * precision * recall / (precision + recall)
 
 def prediction_to_img(pred):
+    """
+    Convert a prediction array (containing only 0s and 1s) to 
+    a 3-channel image (containing only 0s and 255s) that can be displayed.
+    """
     pred3c = np.zeros((pred.shape[0], pred.shape[1], 3), dtype=np.uint8)
     pred8 = img_float_to_uint8(pred)          
     pred3c[:, :, 0] = pred8
@@ -248,14 +259,14 @@ def prediction_to_img(pred):
     pred3c[:, :, 2] = pred8
     return pred3c
 
-def predict_test_masks(model):
-    print("Running prediction on test set")
-    
-    test_dir = 'data/test_set_images/'
-    prediction_test_dir = "predictions_test/"
+def predict_test_masks(model, test_dir, prediction_test_dir):   
+    """
+    Predict the masks associated with the test images. The masks
+    are saved in the folder prediction_test_dir.
+    """ 
     if not os.path.isdir(prediction_test_dir):
         os.mkdir(prediction_test_dir)
-    for img_dir in os.listdir(test_dir):
+    for img_dir in tqdm(os.listdir(test_dir)):
          if "test_" in img_dir:
             image_filename = test_dir + img_dir+'/'+img_dir + ".png"
             img = mpimg.imread(image_filename)
