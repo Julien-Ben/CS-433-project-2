@@ -131,6 +131,7 @@ def img_float_to_uint8(img):
     return rimg
 
 
+
 def concatenate_images(img, gt_img):
     n_channels = len(gt_img.shape)
     w = gt_img.shape[0]
@@ -238,3 +239,25 @@ def F1_score(y_truth, y_pred):
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
     return 2 * precision * recall / (precision + recall)
+
+def prediction_to_img(pred):
+    pred3c = np.zeros((pred.shape[0], pred.shape[1], 3), dtype=np.uint8)
+    pred8 = img_float_to_uint8(pred)          
+    pred3c[:, :, 0] = pred8
+    pred3c[:, :, 1] = pred8
+    pred3c[:, :, 2] = pred8
+    return pred3c
+
+def predict_test_masks(model):
+    print("Running prediction on test set")
+    
+    test_dir = 'data/test_set_images/'
+    prediction_test_dir = "predictions_test/"
+    if not os.path.isdir(prediction_test_dir):
+        os.mkdir(prediction_test_dir)
+    for img_dir in os.listdir(test_dir):
+         if "test_" in img_dir:
+            image_filename = test_dir + img_dir+'/'+img_dir + ".png"
+            img = mpimg.imread(image_filename)
+            mask = prediction_to_img(get_prediction(model, img))
+            Image.fromarray(mask).save(prediction_test_dir + img_dir + ".png")
