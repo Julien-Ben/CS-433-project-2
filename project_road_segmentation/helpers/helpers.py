@@ -43,12 +43,12 @@ def extract_data(filename, num_images):
         imageid = "satImage_%.3d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
-            print('Loading ' + image_filename)
             img = mpimg.imread(image_filename)
             imgs.append(img)
         else:
             print('File ' + image_filename + ' does not exist')
 
+    print('Loaded {} training images'.format(len(imgs)))
     num_images = len(imgs)
     IMG_WIDTH = imgs[0].shape[0]
     IMG_HEIGHT = imgs[0].shape[1]
@@ -78,12 +78,11 @@ def extract_labels(filename, num_images):
         imageid = "satImage_%.3d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
-            print('Loading ' + image_filename)
             img = mpimg.imread(image_filename)
             gt_imgs.append(img)
         else:
             print('File ' + image_filename + ' does not exist')
-
+    print('Loaded {} groudtruth images'.format(len(gt_imgs)))
     num_images = len(gt_imgs)
     gt_patches = [img_crop(gt_imgs[i], IMG_PATCH_SIZE, IMG_PATCH_SIZE) for i in range(num_images)]
     data = np.asarray([gt_patches[i][j] for i in range(len(gt_patches)) for j in range(len(gt_patches[i]))])
@@ -197,7 +196,6 @@ def get_prediction(model, img):
     data = np.asarray(img_crop(img, IMG_PATCH_SIZE, IMG_PATCH_SIZE))
     output_prediction = model.predict(data)
     img_prediction = label_to_img(img.shape[0], img.shape[1], IMG_PATCH_SIZE, IMG_PATCH_SIZE, output_prediction)
-    print("Error rate: ",error_rate(pred_to_one_hot(img_prediction), img))
     return img_prediction
 
 # Get a concatenation of the prediction and groundtruth for given input file
@@ -223,7 +221,20 @@ def get_prediction_with_overlay(model, filename, image_idx):
 
     return oimg
 
-def pred_to_one_hot(predictions):
-    one_hot = np.zeros_like(predictions)
-    one_hot[np.arange(len(predictions)), predictions.argmax(1)] = 1
-    return one_hot
+def one_hot_to_scalar(one_hot_labels):
+    return np.argmax(one_hot_labels, axis=1)
+
+def compute_confusion_matrix(y_truth, y_pred):
+    y_truth_vec = one_hot_to_scalar(y_truth)
+    y_pred_vec = one_hot_to_scalar(y_pred)
+    TP = np.count_nonzero(y_pred_vec * y_truth_vec)
+    TN = np.count_nonzero((y_pred_vec - 1) * (y_truth_vec - 1))
+    FP = np.count_nonzero(y_pred_vec * (y_truth_vec - 1))
+    FN = np.count_nonzero((y_pred_vec - 1) * y_truth_vec)
+    return TP, TN, FP, FN
+
+def F1_score(y_truth, y_pred):
+    TP, TN, FP, FN = compute_confusion_matrix(y_truth, y_pred)
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+    return 2 * precision * recall / (precision + recall)

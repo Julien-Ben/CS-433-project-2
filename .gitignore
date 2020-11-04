@@ -134,3 +134,4 @@ dmypy.json
 .vscode
 data/
 predictions_training/
+segment_aerial_images/
