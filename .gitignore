@@ -132,8 +132,3 @@ dmypy.json
 .DS_Store
 
 .vscode
-data/
-predictions_training/
-predictions_test/
-segment_aerial_images/
-*.csv
