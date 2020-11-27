@@ -19,6 +19,10 @@ PIXEL_DEPTH = 255
 NUM_LABELS = 2
 SEED = 66478  # Set to None for random seed.
 
+def load_image(infilename):
+    data = mpimg.imread(infilename)
+    return data
+
 # Extract patches from a given image
 def img_crop(im, w, h):
     list_patches = []
