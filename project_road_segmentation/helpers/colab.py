@@ -21,10 +21,13 @@ def download_model(model_name, save_dir, files):
 # if COLAB:
 #     from helpers.colab import mount_and_pull
 #     from google.colab import drive
+#     BRANCH_NAME = 'nom_de_votre_branche'
 #     mount_and_pull(BRANCH_NAME, drive, os)
 #
 # And these lines after saving your model to download it on your local system
+# (MODEL_NAME and the save directory should be set in the Notebook)
 # if COLAB:
 #     from helpers.colab import download_model
 #     from google.colab import files
 #     download_model(MODEL_NAME, model_chosen['save_dir'], files)
+
