@@ -1,7 +1,4 @@
 def mount_and_pull(branch_name, drive, os):
-    drive.mount('/content/drive')
-    drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2'
-    os.chdir(drive_path)
     mgc = get_ipython().magic
     os.system('git fetch')
     os.system('git reset --hard')
@@ -21,6 +18,9 @@ def download_model(model_name, save_dir, files):
 # if COLAB:
 #     from helpers.colab import mount_and_pull
 #     from google.colab import drive
+#     drive.mount('/content/drive')
+#     drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2'
+#     os.chdir(drive_path)
 #     BRANCH_NAME = 'nom_de_votre_branche'
 #     mount_and_pull(BRANCH_NAME, drive, os)
 #
