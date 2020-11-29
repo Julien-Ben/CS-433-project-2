@@ -7,7 +7,7 @@ import matplotlib.image as mpimg
 from PIL import Image
 
 import numpy as np
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 
 # Set image patch size in pixels
 # IMG_PATCH_SIZE should be a multiple of 4
