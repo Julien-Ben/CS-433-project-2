@@ -1,29 +1,19 @@
-def mount_and_pull(branch_name):
-    mgc = get_ipython().magic
-
-    # Set current directory and clone github repo
-    drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/'
+def mount_and_pull(branch_name, drive, os):
+    drive.mount('/content/drive')
+    drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2'
     os.chdir(drive_path)
-    repo = "CS-433-project-2"
-
-    if not os.path.isdir("CS-433-project-2"):
-        uname = input("Github username:")
-        password = getpass('Password:')
-        mgc("!git clone 'https://{}:{}@github.com/Julien-Ben/{}.git'.format(uname, password, repo)")
-    else:
-        os.chdir(repo)
-        mgc('!git fetch')
-        mgc('!git checkout {}'.format(branch_name))
-        mgc('!git reset --hard')
-        mgc('!git pull')
-        mgc('!git branch')
+    mgc = get_ipython().magic
+    os.system('!git fetch')
+    os.system('!git checkout {}'.format(branch_name))
+    os.system('!git reset --hard')
+    os.system('!git pull')
+    os.system('!git branch')
     mgc('%cd project_road_segmentation')
-    mgc('!ls')
+    os.system('!ls')
 
 
-def download_model(model_name, save_dir):
-    from google.colab import files
+def download_model(model_name, save_dir, files):
     zip_cmd = 'zip -r ./{}.zip ./{}'.format(model_name, save_dir)
-    mgc(zip_cmd)
+    os.system(zip_cmd)
     files.download('./{}.zip'.format(model_name))
 
