@@ -1,17 +1,25 @@
+import subprocess
+
+
 def mount_and_pull(branch_name, drive, os):
     mgc = get_ipython().magic
-    os.system('git fetch')
-    os.system('git reset --hard')
-    os.system('git checkout {}'.format(branch_name))
-    os.system('git pull')
-    os.system('git branch')
+    execute_and_get_output('git fetch')
+    execute_and_get_output('git reset --hard')
+    execute_and_get_output('git checkout {}'.format(branch_name))
+    execute_and_get_output('git pull')
+    execute_and_get_output('git branch')
     mgc('cd project_road_segmentation')
-    os.system('ls')
+    execute_and_get_output('ls')
+
+
+def execute_and_get_output(command):
+    result = subprocess.check_output(command, shell=True)
+    print(result.decode('utf-8'))
 
 
 def download_model(model_name, save_dir, files):
     zip_cmd = 'zip -r ./{}.zip ./{}'.format(model_name, save_dir)
-    os.system(zip_cmd)
+    execute_and_get_output(zip_cmd)
     files.download('./{}.zip'.format(model_name))
 
 # Add these lines to the notebook to pull your branch on the Drive
