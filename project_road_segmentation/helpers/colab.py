@@ -4,6 +4,7 @@ import subprocess
 def mount_and_pull(branch_name, drive, os):
     mgc = get_ipython().magic
     execute_and_get_output('git fetch')
+    execute_and_get_output('git add -A')
     execute_and_get_output('git reset --hard')
     execute_and_get_output('git checkout {}'.format(branch_name))
     execute_and_get_output('git pull')
@@ -13,8 +14,12 @@ def mount_and_pull(branch_name, drive, os):
 
 
 def execute_and_get_output(command):
-    result = subprocess.check_output(command, shell=True)
-    print(result.decode('utf-8'))
+    try:
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        print(result.decode('utf-8'))
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            "command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output.decode('utf-8')))
 
 
 def download_model(model_name, save_dir, files):
