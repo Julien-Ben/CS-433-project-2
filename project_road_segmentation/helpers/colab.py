@@ -16,11 +16,11 @@ def download_model(model_name, save_dir, files):
 
 # Add these lines to the notebook to pull your branch on the Drive
 # if COLAB:
-#     from helpers.colab import mount_and_pull
 #     from google.colab import drive
 #     drive.mount('/content/drive')
 #     drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2'
 #     os.chdir(drive_path)
+#     from helpers.colab import mount_and_pull
 #     BRANCH_NAME = 'nom_de_votre_branche'
 #     mount_and_pull(BRANCH_NAME, drive, os)
 #
