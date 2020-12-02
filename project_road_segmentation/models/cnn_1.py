@@ -1,4 +1,4 @@
-def CNN() : 
+def cnn_1():
     # Create the model
     cnn_model = models.Sequential()
     cnn_model.add(layers.Conv2D(64, (5, 5), activation='relu', input_shape=(400, 400, 3), padding='same', use_bias=True))
