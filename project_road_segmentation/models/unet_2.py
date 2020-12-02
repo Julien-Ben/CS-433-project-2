@@ -8,25 +8,8 @@ from tensorflow.keras.layers import concatenate, add
 
 IMAGE_SIZE = 400
 
-def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
-    """Function to add 2 convolutional layers with the parameters passed to it"""
-    # first layer
-    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
-              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
-    if batchnorm:
-        x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    # second layer
-    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
-              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
-    if batchnorm:
-        x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    return x
-  
-def get_unet(n_filters = 16, dropout = 0.1, batchnorm = True):
+
+def unet_2(n_filters=16, dropout=0.1, batchnorm=True):
     input_img = Input((IMAGE_SIZE, IMAGE_SIZE, 3), name='img')
     # Contracting Path
     c1 = conv2d_block(input_img, n_filters * 1, kernel_size = 3, batchnorm = batchnorm)
@@ -71,3 +54,22 @@ def get_unet(n_filters = 16, dropout = 0.1, batchnorm = True):
     outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
     model = Model(inputs=[input_img], outputs=[outputs])
     return model
+
+
+def conv2d_block(input_tensor, n_filters, kernel_size = 3, batchnorm = True):
+    """Function to add 2 convolutional layers with the parameters passed to it"""
+    # first layer
+    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
+              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
+    if batchnorm:
+        x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    
+    # second layer
+    x = Conv2D(filters = n_filters, kernel_size = (kernel_size, kernel_size),\
+              kernel_initializer = 'he_normal', padding = 'same')(input_tensor)
+    if batchnorm:
+        x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    
+    return x

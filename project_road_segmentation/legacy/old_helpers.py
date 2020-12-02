@@ -1,7 +1,5 @@
 import gzip
 import os
-import sys
-import urllib
 from tqdm import tqdm
 import matplotlib.image as mpimg
 from PIL import Image
@@ -9,34 +7,7 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 
-# Set image patch size in pixels
-# IMG_PATCH_SIZE should be a multiple of 4
-# image size should be an integer multiple of this number!
-IMG_PATCH_SIZE = 16
-PIXEL_DEPTH = 255
-NUM_CHANNELS = 3  # RGB images
-PIXEL_DEPTH = 255
-NUM_LABELS = 2
-SEED = 66478  # Set to None for random seed.
-
-def load_image(infilename):
-    data = mpimg.imread(infilename)
-    return data
-
-# Extract patches from a given image
-def img_crop(im, w, h):
-    list_patches = []
-    imgwidth = im.shape[0]
-    imgheight = im.shape[1]
-    is_2d = len(im.shape) < 3
-    for i in range(0, imgheight, h):
-        for j in range(0, imgwidth, w):
-            if is_2d:
-                im_patch = im[j:j+w, i:i+h]
-            else:
-                im_patch = im[j:j+w, i:i+h, :]
-            list_patches.append(im_patch)
-    return list_patches
+from constants import *
 
 
 def extract_data(filename, num_images):
