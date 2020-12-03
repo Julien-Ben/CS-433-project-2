@@ -9,7 +9,6 @@ def mount_and_pull(branch_name, drive, os):
     execute_and_get_output('git checkout {}'.format(branch_name))
     execute_and_get_output('git pull')
     execute_and_get_output('git branch')
-    mgc('cd project_road_segmentation')
     execute_and_get_output('ls')
 
 
@@ -31,7 +30,7 @@ def download_model(model_name, save_dir, files):
 # if COLAB:
 #     from google.colab import drive
 #     drive.mount('/content/drive')
-#     drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2'
+#     drive_path = '/content/drive/Shareddrives/ML_Road_Segmentation/CS-433-project-2/project_road_segmentation'
 #     os.chdir(drive_path)
 #     from helpers.colab import mount_and_pull
 #     BRANCH_NAME = 'nom_de_votre_branche'
