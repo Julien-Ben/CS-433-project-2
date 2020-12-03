@@ -40,6 +40,20 @@ def load_images(path, num_images):
     return np.asarray(images)
 
 
+def load_test_images(path=TEST_IMAGES_DIR, num_images=50):
+    images = []
+    for i in tqdm(range(num_images)):
+        image_id = "test_{}/test_{}".format(i+1, i+1)
+        image_filename = path + image_id + ".png"
+        if os.path.isfile(image_filename):
+            img = mpimg.imread(image_filename)
+            images.append(img)
+        else:
+            raise ValueError('File ' + image_filename + ' does not exist')
+
+    return np.asarray(images)
+
+
 def load_features(num_images):
     return load_images(TRAIN_IMAGES_DIR, num_images)
 

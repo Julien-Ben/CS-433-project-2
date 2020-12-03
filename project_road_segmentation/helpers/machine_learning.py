@@ -11,3 +11,4 @@ def get_train_test():
     X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
                                                         train_size=TRAINING_SIZE, random_state=SEED)
     return X_train, X_test, y_train, y_test
+
