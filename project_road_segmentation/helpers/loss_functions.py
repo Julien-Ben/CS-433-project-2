@@ -1,6 +1,6 @@
-ALPHA = 0.2  # Closer to 1 will penalize False Negatives more (= Saying background when it's road)
+ALPHA = 0.7  # Closer to 1 will penalize False Negatives more (= Saying background when it's road)
 BETA = 1 - ALPHA  # Closer to 1 will penalize False Positives more (= Saying road when it's background)
-GAMMA = 1  # Non-linearity. Above one will focus on harder examples
+GAMMA = 0.75  # Non-linearity. Above one will focus on harder examples
 # ALPHA = 0.5 and GAMMA = 1 is dice loss
 
 
