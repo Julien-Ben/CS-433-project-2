@@ -1,3 +1,5 @@
+import tensorflow.keras.backend as K
+
 ALPHA = 0.7  # Closer to 1 will penalize False Negatives more (= Saying background when it's road)
 BETA = 1 - ALPHA  # Closer to 1 will penalize False Positives more (= Saying road when it's background)
 GAMMA = 0.75  # Non-linearity. Above one will focus on harder examples
@@ -8,14 +10,14 @@ def focal_tversky_loss(y_true, y_pred, gamma=GAMMA):
     """
     Non-linear Tversky loss
     """
-    return K.pow((1 - tversky(y_true, y_pred)), gamma)
+    return K.pow((1 - tversky_index(y_true, y_pred)), gamma)
 
 
 def tversky_loss(y_true, y_pred):
     """
     Weighted Dice loss
     """
-    return 1 - tversky(y_true, y_pred)
+    return 1 - tversky_index(y_true, y_pred)
 
 
 def dice_loss(y_true, y_pred):

@@ -16,14 +16,14 @@ RESTORE_MODEL = False  # If True, restore existing model instead of training a n
 SAVE_MODEL = False
 GENERATE_PREDICTION = False  # If True, will generate a CSV to submit on AICrowd
 
-MODEL_NAME = 'unet_1'  # For now, cnn, unet-1, unet-2
+MODEL_NAME = 'unet_2'  # For now, cnn, unet-1, unet-2
 SAVE_DIR = MODELS_SAVE_DIR + MODEL_NAME + '/'
 
 SEED = 66478  # Set to None for random seed.
 TRAINING_SAMPLES = 100  # Max is 100
 VALIDATION_SIZE = .2  # Remaining part is for training and testing
 TRAINING_SIZE = .8  # Remaining part is for testing
-NUM_EPOCHS = 50
+NUM_EPOCHS = 250
 
 ROAD_THRESHOLD_PIXEL = 0.5
 ROAD_THRESHOLD_PIXEL_PRED = 0.5
