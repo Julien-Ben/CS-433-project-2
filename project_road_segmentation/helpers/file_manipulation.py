@@ -29,7 +29,7 @@ def mask_to_submission_strings(image_filename):
 
 def load_images(path, num_images):
     images = []
-    for i in tqdm(range(num_images)):
+    for i in tqdm(range(num_images), desc="Loading " + path):
         image_id = "satImage_%.3d" % (i+1)
         image_filename = path + image_id + ".png"
         if os.path.isfile(image_filename):
