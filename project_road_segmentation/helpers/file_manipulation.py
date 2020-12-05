@@ -67,30 +67,6 @@ def load_labels(num_images):
     gt = load_images(TRAIN_LABELS_DIR, num_images)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
-
-def load_generated_data(generated_folder, transformations=None):
-    """
-    :param generated_folder: top folder containing the transformations
-    :param transformations: list of transformation folders to load, if None load everything, 
-    current possible values: ['mix', 'flip', 'shift', 'rotation']
-    """
-    # List all possible folders we can load
-    # Condition using isdir to exclude files like .DS_Store etc.
-    folders_to_load = [folder for folder in os.listdir(generated_folder) if os.path.isdir(generated_folder + folder)]
-
-    # If specific folders are specified
-    if transformations != None:
-        folders_to_load = [folder for folder in transformations if folder in folders_to_load]
-    
-    images = []
-    groundtruths = []
-    for folder in folders_to_load:
-        image_path = generated_folder + folder + '/images/'
-        gt_path = generated_folder + folder + '/groundtruth/'
-        images.append(load_folder(image_path))
-        groundtruths.append(load_folder(gt_path, grayscale=True))
-    return np.concatenate(images,axis=0), np.concatenate(groundtruths, axis=0)
-    
 def load_folder(path, grayscale=False):
     """
     Load every image in the fodler at path with name format 'satImage'
@@ -104,3 +80,26 @@ def load_folder(path, grayscale=False):
         img = np.array(img)
         imgs.append(img)
     return imgs
+
+def load_generated_data(transformations=None):
+    """
+    :param transformations: list of transformation folders to load, if None or empty loads everything, 
+    current possible values: ['mix', 'flip', 'shift', 'rotation']
+    """
+    # List all possible folders we can load
+    # Condition using isdir to exclude files like .DS_Store etc.
+    folders_to_load = [folder for folder in os.listdir(GENERATION_DIR) if os.path.isdir(GENERATION_DIR + folder)]
+
+    # If specific folders are specified
+    if transformations != None and len(transformations) > 0:
+        folders_to_load = [folder for folder in transformations if folder in folders_to_load]
+    
+    images = []
+    groundtruths = []
+    for folder in folders_to_load:
+        image_path = GENERATION_DIR + folder + '/images/'
+        gt_path = GENERATION_DIR + folder + '/groundtruth/'
+        images.append(load_folder(image_path))
+        groundtruths.append(load_folder(gt_path, grayscale=True))
+    return np.concatenate(images,axis=0), np.concatenate(groundtruths, axis=0)
+    
