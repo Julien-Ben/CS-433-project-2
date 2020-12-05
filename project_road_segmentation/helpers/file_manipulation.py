@@ -69,15 +69,15 @@ def load_labels(num_images):
 
 def load_folder(path, grayscale=False):
     """
-    Load every image in the fodler at path with name format 'satImage'
+    Load every image in the folder at path with name format 'satImage'
     """
     imgs = []
     image_names = sorted([path + image for image in os.listdir(path) if 'satImage' in image])
     for image_name in tqdm(image_names, desc="Loading " + path):
-        img = Image.open(image_name).convert('RGB')
+        img = Image.open(image_name).convert('RGB') #Convert rgba to rgb
         if grayscale:
-            img = ImageOps.grayscale(img)
-        img = np.array(img)
+            img = ImageOps.grayscale(img) #Convert to grayscale
+        img = np.array(img) / 255 #Scale value between 0 and 1
         imgs.append(img)
     return imgs
 

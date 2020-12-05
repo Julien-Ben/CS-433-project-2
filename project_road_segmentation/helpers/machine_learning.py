@@ -3,6 +3,13 @@ from .file_manipulation import *
 from sklearn.model_selection import train_test_split
 
 def get_train_test(data_augmentation = False, transformations=None):
+    """
+    Load training images and split them into a training and testing sets.
+    :param data_augmentation: set to `True` to use generated data
+    :param transformation: `list` used to specify with generated data to use when 
+    data_augmentation is `True`. Leave to `None` to load everything. 
+    Current possible values: `['mix', 'flip', 'shift', 'rotation']`
+    """
     images = load_features(TRAINING_SAMPLES)
     groundtruths = load_labels(TRAINING_SAMPLES)
     if data_augmentation:
