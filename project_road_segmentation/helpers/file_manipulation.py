@@ -2,6 +2,7 @@ import os
 import re
 import numpy as np
 import matplotlib.image as mpimg
+from PIL import Image, ImageOps
 from tqdm import tqdm
 from .constants import *
 from .image_processing import predict_patch
@@ -65,3 +66,41 @@ def load_labels(num_images):
     """
     gt = load_images(TRAIN_LABELS_DIR, num_images)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
+
+
+def load_generated_data(generated_folder, transformations=None):
+    """
+    :param generated_folder: top folder containing the transformations
+    :param transformations: list of transformation folders to load, if None load everything, 
+    current possible values: ['mix', 'flip', 'shift', 'rotation']
+    """
+    # List all possible folders we can load
+    # Condition using isdir to exclude files like .DS_Store etc.
+    folders_to_load = [folder for folder in os.listdir(generated_folder) if os.path.isdir(generated_folder + folder)]
+
+    # If specific folders are specified
+    if transformations != None:
+        folders_to_load = [folder for folder in transformations if folder in folders_to_load]
+    
+    images = []
+    groundtruths = []
+    for folder in folders_to_load:
+        image_path = generated_folder + folder + '/images/'
+        gt_path = generated_folder + folder + '/groundtruth/'
+        images.append(load_folder(image_path))
+        groundtruths.append(load_folder(gt_path, grayscale=True))
+    return np.concatenate(images,axis=0), np.concatenate(groundtruths, axis=0)
+    
+def load_folder(path, grayscale=False):
+    """
+    Load every image in the fodler at path with name format 'satImage'
+    """
+    imgs = []
+    image_names = sorted([path + image for image in os.listdir(path) if 'satImage' in image])
+    for image_name in tqdm(image_names, desc="Loading " + path):
+        img = Image.open(image_name).convert('RGB')
+        if grayscale:
+            img = ImageOps.grayscale(img)
+        img = np.array(img)
+        imgs.append(img)
+    return imgs

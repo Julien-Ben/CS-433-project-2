@@ -11,6 +11,7 @@ MODELS_SAVE_DIR = 'model_save/'
 TRAIN_IMAGES_DIR = 'data/training/images/'
 TEST_IMAGES_DIR = 'data/test_set_images/'
 TRAIN_LABELS_DIR = 'data/training/groundtruth/'
+GENERATION_DIR = 'data/generated/'
 
 RESTORE_MODEL = False  # If True, restore existing model instead of training a new one
 SAVE_MODEL = False
