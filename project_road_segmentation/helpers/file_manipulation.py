@@ -7,26 +7,6 @@ from tqdm import tqdm
 from .constants import *
 from .image_processing import predict_patch
 
-
-def masks_to_submission(submission_filename, image_dir):
-    """Converts images into a submission file"""
-    with open(submission_filename, 'w') as file:
-        file.write('id,prediction\n')
-        for img_name in tqdm(os.listdir(image_dir)):
-            file.writelines('{}\n'.format(s) for s in mask_to_submission_strings(image_dir + img_name))
-
-
-def mask_to_submission_strings(image_filename):
-    """Reads a single image and outputs the strings that should go into the submission file"""
-    img_number = int(re.search(r"\d+", image_filename).group(0))
-    im = mpimg.imread(image_filename)
-    for j in range(0, im.shape[1], PATCH_SIZE):
-        for i in range(0, im.shape[0], PATCH_SIZE):
-            patch = im[i:i + PATCH_SIZE, j:j + PATCH_SIZE]
-            label = predict_patch(patch)
-            yield("{:03d}_{}_{},{}".format(img_number, j, i, label))
-
-
 def load_images(path, num_images):
     images = []
     for i in tqdm(range(num_images), desc="Loading " + path):
@@ -43,7 +23,7 @@ def load_images(path, num_images):
 
 def load_test_images(path=TEST_IMAGES_DIR, num_images=50):
     images = []
-    for i in tqdm(range(num_images)):
+    for i in tqdm(range(num_images), desc="Loading " + path):
         image_id = "test_{}/test_{}".format(i+1, i+1)
         image_filename = path + image_id + ".png"
         if os.path.isfile(image_filename):
@@ -102,4 +82,3 @@ def load_generated_data(transformations=None):
         images.append(load_folder(image_path))
         groundtruths.append(load_folder(gt_path, grayscale=True))
     return np.concatenate(images,axis=0), np.concatenate(groundtruths, axis=0)
-    

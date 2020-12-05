@@ -46,3 +46,16 @@ def tversky_index(y_true, y_pred, smooth=1, alpha=ALPHA):
     fn = K.sum(y_true_f * (1 - y_pred_f))
     fp = K.sum((1 - y_true_f) * y_pred_f)
     return (tp + smooth) / (tp + alpha*fn + beta*fp + smooth)
+
+# U-net 2 currently trained with dice_coef as metric
+# and dice_coef_loss as loss
+smooth = 1.
+def dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    
+def dice_coef_loss(y_true, y_pred):
+    return 1-dice_coef(y_true, y_pred)
+    
