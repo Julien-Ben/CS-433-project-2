@@ -32,8 +32,8 @@ def predict_submissions(model):
     masks608 = np.asarray([(mask >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0 for mask in masks608])
  
     #Convert mask to patch labels and write them into the file submission.csv
-    if not os.path.isdir(PREDICTIONS_SAVE_DIR):
-        os.mkdir(PREDICTIONS_SAVE_DIR)
+    if not os.path.isdir(SUBMISSIONS_DIR):
+        os.mkdir(SUBMISSIONS_DIR)
     now = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
     make_prediction(masks608, filename=f"{SUBMISSIONS_DIR}submission_{now}.csv")
     
