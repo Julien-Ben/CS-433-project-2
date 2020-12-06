@@ -22,8 +22,7 @@ def predict_submissions(model):
     
     #Predict their mask
     print("Predicting test images...")
-    with tf.device('/cpu:0'):
-        masks400 = model.predict(images400).squeeze()
+    masks400 = model.predict(images400).squeeze()
     
     #Merge the 4 400x400 masks into one 608x608 by averaging the overlapping parts
     masks608 = merge_masks400(masks400)
