@@ -10,11 +10,11 @@ def general_check(predictions):
 
 
 def visualize_random_predictions(x, y, predictions, size=4):
-    for i in np.random.randint(len(x), size=size):
-        pred = predictions[i].copy()
-        pred = (pred >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0
-        plt.figure()
-        img1 = concatenate_images(x[i], prediction_to_rgb_image(predictions[i]))
-        img2 = concatenate_images(img1, prediction_to_rgb_image(pred))
-        img3 = concatenate_images(img2, prediction_to_rgb_image(y[i]))
-        plt.imshow(img3)
+    fig, axes = plt.subplots(size, 4, figsize=(20, 5*size))
+    for i, idx in enumerate(np.random.randint(len(x), size=size)):
+        pred = predictions[idx]
+        binarized_pred = (pred >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0
+        axes[i,0].imshow(x[idx])
+        axes[i,1].imshow(prediction_to_rgb_image(pred))
+        axes[i,2].imshow(prediction_to_rgb_image(binarized_pred))
+        axes[i,3].imshow(prediction_to_rgb_image(y[idx]))

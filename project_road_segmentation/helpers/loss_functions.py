@@ -6,18 +6,18 @@ GAMMA = 0.75  # Non-linearity. Above one will focus on harder examples
 # ALPHA = 0.5 and GAMMA = 1 is dice loss
 
 
-def focal_tversky_loss(y_true, y_pred, gamma=GAMMA):
+def focal_tversky_loss(y_true, y_pred, gamma=GAMMA, alpha=ALPHA):
     """
     Non-linear Tversky loss
     """
-    return K.pow((1 - tversky_index(y_true, y_pred)), gamma)
+    return K.pow((1 - tversky_index(y_true, y_pred, alpha=alpha)), gamma)
 
 
-def tversky_loss(y_true, y_pred):
+def tversky_loss(y_true, y_pred, alpha=ALPHA):
     """
     Weighted Dice loss
     """
-    return 1 - tversky_index(y_true, y_pred)
+    return 1 - tversky_index(y_true, y_pred, alpha=alpha)
 
 
 def dice_loss(y_true, y_pred):
