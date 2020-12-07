@@ -12,3 +12,8 @@ def concatenate_images(img1, img2):
 
 def prediction_to_rgb_image(prediction):
     return np.stack((prediction, prediction, prediction), axis=-1)
+
+def img_float_to_uint8(img):
+    rimg = img - np.min(img)
+    rimg = (rimg / np.max(rimg) * PIXEL_DEPTH).round().astype(np.uint8)
+    return rimg
