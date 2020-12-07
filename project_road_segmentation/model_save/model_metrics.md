@@ -14,10 +14,8 @@
 | `tversky_alpha_0_7` | 0.848423   | 0.944167    | 0.777108 | 0.934148 | `focal_tversky` loss, $\alpha=0.7$, $\gamma = 0.75$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 | `tversky_gamma_1` | 0.850091   | 0.945247    | 0.78418 | 0.928099 | `focal_tversky` loss, $\alpha=0.6$, $\gamma = 1$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 | `tversky_gamma_1_2` | 0.848839   | 0.944709    | 0.782063 | 0.928083 | `focal_tversky` loss, $\alpha=0.6$, $\gamma = 1.2$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
+| `dropout_0` | 0.84235   | 0.943748    | 0.792862 | 0.898428 | null dropout rate | `focal_tversky_loss ` | `nadam` | 0 | 16 |
+| `dropout_0_15` | 0.859936   | 0.949252    | 0.798714 | 0.931323 | dropout rate 0.15| `focal_tversky_loss ` | `nadam` | 0.15 | 16 |
+| `nadam` | 0.847146   | 0.944398    | 0.784167 | 0.921125 | Nadam optimizer| `focal_tversky_loss ` | `nadam` | 0.1 | 16 |
 
-0.855213	0.947701	0.796415	0.923385
-0.859936	0.949252	0.798714	0.931323 #dropout_0_15
-0.84235	0.943748	0.792862	0.898428 #dropout 0
-
-
-While `tversky_alpha_0_6` isn't best, it has graphical good results therefore we set $\alpha = 0.6$.
+While `tversky_alpha_0_6` isn't best, it has graphical good results therefore we set $\alpha = 0.6$. Similarly $\gamma = 0.75$
