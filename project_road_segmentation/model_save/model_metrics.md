@@ -14,8 +14,10 @@
 | `tversky_alpha_0_7` | 0.848423   | 0.944167    | 0.777108 | 0.934148 | `focal_tversky` loss, $\alpha=0.7$, $\gamma = 0.75$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 | `tversky_gamma_1` | 0.850091   | 0.945247    | 0.78418 | 0.928099 | `focal_tversky` loss, $\alpha=0.6$, $\gamma = 1$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 | `tversky_gamma_1_2` | 0.848839   | 0.944709    | 0.782063 | 0.928083 | `focal_tversky` loss, $\alpha=0.6$, $\gamma = 1.2$| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
-| `dropout_0` | 0.84235   | 0.943748    | 0.792862 | 0.898428 | null dropout rate | `focal_tversky_loss ` | `nadam` | 0 | 16 |
-| `dropout_0_15` | 0.859936   | 0.949252    | 0.798714 | 0.931323 | dropout rate 0.15| `focal_tversky_loss ` | `nadam` | 0.15 | 16 |
-| `nadam` | 0.847146   | 0.944398    | 0.784167 | 0.921125 | Nadam optimizer| `focal_tversky_loss ` | `nadam` | 0.1 | 16 |
+| `dropout_0` | 0.84235   | 0.943748    | 0.792862 | 0.898428 | null dropout rate | 250 | `focal_tversky_loss ` | `nadam` | 0 | 16 |
+| `dropout_0_15` | 0.859936   | 0.949252    | 0.798714 | 0.931323 | dropout rate 0.15| 250 | `focal_tversky_loss ` | `nadam` | 0.15 | 16 |
+| `nadam` | 0.847146   | 0.944398    | 0.784167 | 0.921125 | Nadam optimizer| 250 | `focal_tversky_loss ` | `nadam` | 0.1 | 16 |
+| `hard_raw` | 0.802942   | 0.93026    | 0.713474 | 0.918065 | Added 32 hand picked hard images| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
+| `data_gen_raw` | 0.828084   | 0.925552    | 0.79576 | 0.863146 | Use an image augmentation generator based on raw images | 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 
 While `tversky_alpha_0_6` isn't best, it has graphical good results therefore we set $\alpha = 0.6$. Similarly $\gamma = 0.75$
