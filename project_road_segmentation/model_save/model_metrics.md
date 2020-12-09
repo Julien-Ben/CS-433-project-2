@@ -19,5 +19,6 @@
 | `nadam` | 0.847146   | 0.944398    | 0.784167 | 0.921125 | Nadam optimizer| 250 | `focal_tversky_loss ` | `nadam` | 0.1 | 16 |
 | `hard_raw` | 0.802942   | 0.93026    | 0.713474 | 0.918065 | Added 32 hand picked hard images| 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 | `data_gen_raw` | 0.828084   | 0.925552    | 0.79576 | 0.863146 | Use an image augmentation generator based on raw images | 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
+| `data_gen_augmented` | 0.780947   | 0.919125    | 0.672285 | 0.931507 | Use an image augmentation generator based on augmented images | 250 | `focal_tversky_loss ` | `adam` | 0.1 | 16 |
 
 While `tversky_alpha_0_6` isn't best, it has graphical good results therefore we set $\alpha = 0.6$. Similarly $\gamma = 0.75$
