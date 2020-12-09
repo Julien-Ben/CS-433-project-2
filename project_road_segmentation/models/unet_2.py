@@ -9,67 +9,49 @@ from tensorflow.keras.layers import concatenate, add
 IMAGE_SIZE = 400
 
 
-def unet_2(n_filters=16, dropout=0.1, batchnorm=True, img_size = IMAGE_SIZE):
-    input_img = Input((IMAGE_SIZE, IMAGE_SIZE, 3), name='img')
+def unet_2(n_filters=16, dropout=0.1, batchnorm=True, img_size=IMAGE_SIZE, kernel_size=3):
+    input_img = Input((img_size, img_size, 3), name='img')
     # Contracting Path
-    c1 = conv2d_block(input_img, n_filters * 1, kernel_size=3, batchnorm=batchnorm)
-    p1 = MaxPooling2D((2, 2))(c1)
-    p1 = Dropout(dropout)(p1)
-
-    c2 = conv2d_block(p1, n_filters * 2, kernel_size=3, batchnorm=batchnorm)
-    p2 = MaxPooling2D((2, 2))(c2)
-    p2 = Dropout(dropout)(p2)
-
-    c3 = conv2d_block(p2, n_filters * 4, kernel_size=3, batchnorm=batchnorm)
-    p3 = MaxPooling2D((2, 2))(c3)
-    p3 = Dropout(dropout)(p3)
-
-    c4 = conv2d_block(p3, n_filters * 8, kernel_size=3, batchnorm=batchnorm)
-    p4 = MaxPooling2D((2, 2))(c4)
-    p4 = Dropout(dropout)(p4)
-
-    c5 = conv2d_block(p4, n_filters * 16, kernel_size=3, batchnorm=batchnorm)
+    pows = [1, 2, 4, 8]
+    last_pow = 16
+    intermediaries = []
+    p = input_img
+    for pow in pows:
+        c, p = down_block(p, n_filters * pow, dropout, batchnorm, kernel_size)
+        intermediaries.append(c)
 
     # Expansive Path
-    u6 = Conv2DTranspose(n_filters * 8, (3, 3), strides=(2, 2), padding='same')(c5)
-    u6 = concatenate([u6, c4])
-    u6 = Dropout(dropout)(u6)
-    c6 = conv2d_block(u6, n_filters * 8, kernel_size=3, batchnorm=batchnorm)
+    u = conv2d_block(p, n_filters * last_pow, kernel_size=kernel_size, batchnorm=batchnorm)
+    for c, pow in zip(reversed(intermediaries), reversed(pows)):
+        u = up_block(c, u, n_filters * pow, dropout, batchnorm, kernel_size)
 
-    u7 = Conv2DTranspose(n_filters * 4, (3, 3), strides=(2, 2), padding='same')(c6)
-    u7 = concatenate([u7, c3])
-    u7 = Dropout(dropout)(u7)
-    c7 = conv2d_block(u7, n_filters * 4, kernel_size=3, batchnorm=batchnorm)
-
-    u8 = Conv2DTranspose(n_filters * 2, (3, 3), strides=(2, 2), padding='same')(c7)
-    u8 = concatenate([u8, c2])
-    u8 = Dropout(dropout)(u8)
-    c8 = conv2d_block(u8, n_filters * 2, kernel_size=3, batchnorm=batchnorm)
-
-    u9 = Conv2DTranspose(n_filters * 1, (3, 3), strides=(2, 2), padding='same')(c8)
-    u9 = concatenate([u9, c1])
-    u9 = Dropout(dropout)(u9)
-    c9 = conv2d_block(u9, n_filters * 1, kernel_size=3, batchnorm=batchnorm)
-
-    outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
+    outputs = Conv2D(1, (1, 1), activation='sigmoid')(u)
     model = Model(inputs=[input_img], outputs=[outputs])
     return model
 
 
+def down_block(input, n_filters, dropout, batchnorm, kernel_size):
+    c = conv2d_block(input, n_filters, kernel_size=kernel_size, batchnorm=batchnorm)
+    p = MaxPooling2D((2, 2))(c)
+    return c, Dropout(dropout)(p)
+
+
+def up_block(concat, input, n_filters, dropout, batchnorm, kernel_size):
+    u = Conv2DTranspose(n_filters, (kernel_size, kernel_size), strides=(2, 2), padding='same')(input)
+    u = concatenate([u, concat])
+    u = Dropout(dropout)(u)
+    return conv2d_block(u, n_filters, kernel_size=kernel_size, batchnorm=batchnorm)
+
+
 def conv2d_block(input_tensor, n_filters, kernel_size=3, batchnorm=True):
     """Function to add 2 convolutional layers with the parameters passed to it"""
-    # first layer
+    x = half_conv2d_block(input_tensor, n_filters, kernel_size, batchnorm)
+    return half_conv2d_block(x, n_filters, kernel_size, batchnorm)
+
+
+def half_conv2d_block(input, n_filters, kernel_size, batchnorm):
     x = Conv2D(filters=n_filters, kernel_size=(kernel_size, kernel_size),
-               kernel_initializer='he_normal', padding='same')(input_tensor)
+               kernel_initializer='he_normal', padding='same')(input)
     if batchnorm:
         x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    # second layer
-    x = Conv2D(filters=n_filters, kernel_size=(kernel_size, kernel_size),
-               kernel_initializer='he_normal', padding='same')(x)
-    if batchnorm:
-        x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    
-    return x
+    return Activation('relu')(x)
