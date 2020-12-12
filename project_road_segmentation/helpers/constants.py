@@ -6,6 +6,7 @@ PATCH_SIZE = 16
 PIXEL_DEPTH = 255
 TRAINING_IMG_SIZE = 400
 TEST_IMG_SIZE = 608
+PATCH_SIZE = 25
   
 # Section 2 : Hyperparameters
 PREDICTIONS_SAVE_DIR = 'data/predictions/'

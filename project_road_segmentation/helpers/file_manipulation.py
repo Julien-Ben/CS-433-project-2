@@ -7,6 +7,7 @@ from tqdm import tqdm
 from .constants import *
 from .image_processing import predict_patch
 
+
 def load_images(path, num_images):
     images = []
     for i in tqdm(range(num_images), desc="Loading " + path):
