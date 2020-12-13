@@ -28,23 +28,36 @@ def get_train_test(data_augmentation=False, transformations=None):
     return X_train, X_test, y_train, y_test
 
 
-def get_train_test_feature_augmentation(feature_augmentation=0, thetas=[], shears=[], brightnesses=[]):
+def get_train_test_feature_augmentation(rotations=0, thetas=[], feature_augmentation=0, brightnesses=[]):
     """
     Load training images and split them into a training and testing sets.
     """
-    if not (len(thetas) == len(shears) and len(shears) == len(brightnesses) and len(shears) == feature_augmentation):
+    if not (len(brightnesses) == feature_augmentation and len(thetas) == rotations):
         raise ValueError('Wrong arguments')
     images = load_features(TRAINING_SAMPLES)
     groundtruths = load_labels(TRAINING_SAMPLES)
-    augmented = np.empty(shape=(len(images), TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 0))
-    for i in range(feature_augmentation):
-        tmp = augment(images, thetas[i], shears[i], brightnesses[i])
-        augmented = np.concatenate((augmented, tmp), axis=3)
-    images = np.concatenate((images, augmented), axis=3)
+
+    augmented_features = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3))
+    augmented_labels = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE))
+    for i in range(rotations):
+        tmp_f = augment_data(images, thetas[i], True)
+        tmp_l = augment_data(groundtruths, thetas[i], False)
+        augmented_features = np.concatenate((augmented_features, tmp_f), axis=0)
+        augmented_labels = np.concatenate((augmented_labels, tmp_l), axis=0)
+    images = np.concatenate((images, augmented_features), axis=0)
+    groundtruths = np.concatenate((groundtruths, augmented_labels), axis=0)
+
     print('Training features shape : ', images.shape)
     print('Training labels shape : ', groundtruths.shape)
     X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
                                                         train_size=TRAINING_SIZE, random_state=SEED)
+
+    augmented = np.empty(shape=(len(X_train), TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 0))
+    for i in range(feature_augmentation):
+        tmp = augment_features(images, brightnesses[i])
+        augmented = np.concatenate((augmented, tmp), axis=3)
+    X_train = np.concatenate((X_train, augmented), axis=3)
+
     return X_train, X_test, y_train, y_test
 
 
@@ -91,13 +104,18 @@ def compute_entire_images_metrics(y_true, y_pred):
     return compute_metrics(y_true, y_pred)
 
 
-def augment(images, theta=0, shear=0, new_brightness=0):
+def augment_features(images, new_brightness):
     augmented = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3))
     for im in images:
-        tmp = apply_affine_transform(im, theta=theta, shear=shear, fill_mode='reflect')
-        if new_brightness != 0:
-            tmp = apply_brightness_shift(tmp, new_brightness)
-        print(tmp.shape)
-        print(tmp.shape)
+        tmp = apply_brightness_shift(im, new_brightness)/255
+        augmented = np.r_[augmented, tmp[None, :, :, :]]
+    return augmented
+
+
+def augment_data(images, theta, is_RGB):
+    shape = (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3) if is_RGB else (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE)
+    augmented = np.empty(shape=shape)
+    for im in images:
+        tmp = apply_affine_transform(im, theta=theta, fill_mode='reflect')
         augmented = np.r_[augmented, tmp[None, :, :, :]]
     return augmented
