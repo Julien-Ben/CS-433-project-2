@@ -37,26 +37,26 @@ def get_train_test_feature_augmentation(rotations=0, thetas=[], feature_augmenta
     images = load_features(TRAINING_SAMPLES)
     groundtruths = load_labels(TRAINING_SAMPLES)
 
-    augmented_features = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3))
-    augmented_labels = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE))
-    for i in range(rotations):
-        tmp_f = augment_data(images, thetas[i], True)
-        tmp_l = augment_data(groundtruths, thetas[i], False)
-        augmented_features = np.concatenate((augmented_features, tmp_f), axis=0)
-        augmented_labels = np.concatenate((augmented_labels, tmp_l), axis=0)
-    images = np.concatenate((images, augmented_features), axis=0)
-    groundtruths = np.concatenate((groundtruths, augmented_labels), axis=0)
+    augmented = np.empty(shape=(len(images), TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 0))
+    for i in range(feature_augmentation):
+        tmp = augment_features(images, brightnesses[i])
+        augmented = np.concatenate((augmented, tmp), axis=3)
+    images = np.concatenate((images, augmented), axis=3)
 
     print('Training features shape : ', images.shape)
     print('Training labels shape : ', groundtruths.shape)
     X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
                                                         train_size=TRAINING_SIZE, random_state=SEED)
 
-    augmented = np.empty(shape=(len(X_train), TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 0))
-    for i in range(feature_augmentation):
-        tmp = augment_features(images, brightnesses[i])
-        augmented = np.concatenate((augmented, tmp), axis=3)
-    X_train = np.concatenate((X_train, augmented), axis=3)
+    augmented_features = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3))
+    augmented_labels = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE))
+    for i in range(rotations):
+        tmp_f = augment_data(X_train, thetas[i], True)
+        tmp_l = augment_data(y_train, thetas[i], False)
+        augmented_features = np.concatenate((augmented_features, tmp_f), axis=0)
+        augmented_labels = np.concatenate((augmented_labels, tmp_l), axis=0)
+    X_train = np.concatenate((X_train, augmented_features), axis=0)
+    y_train = np.concatenate((y_train, augmented_labels), axis=0)
 
     return X_train, X_test, y_train, y_test
 
@@ -115,7 +115,14 @@ def augment_features(images, new_brightness):
 def augment_data(images, theta, is_RGB):
     shape = (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3) if is_RGB else (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE)
     augmented = np.empty(shape=shape)
+    print(is_RGB, theta)
     for im in images:
+        if not is_RGB:
+          im = im[:, :, None]
         tmp = apply_affine_transform(im, theta=theta, fill_mode='reflect')
-        augmented = np.r_[augmented, tmp[None, :, :, :]]
+        if is_RGB:
+          tmp = tmp[None, :, :, :]
+        else:
+          tmp = (tmp.squeeze())[None, :, :]
+        augmented = np.r_[augmented, tmp]
     return augmented
