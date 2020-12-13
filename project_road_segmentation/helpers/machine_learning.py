@@ -5,11 +5,12 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 import pandas as pd
 import numpy as np
 
-def get_train_test(data_augmentation = False, transformations=None):
+
+def get_train_test(data_augmentation=False, transformations=None):
     """
     Load training images and split them into a training and testing sets.
     :param data_augmentation: set to `True` to use generated data
-    :param transformation: `list` used to specify with generated data to use when 
+    :param transformations: `list` used to specify with generated data to use when
     data_augmentation is `True`. Leave to `None` to load everything. 
     Current possible values: `['mix', 'flip', 'shift', 'rotation']`
     """
@@ -26,6 +27,25 @@ def get_train_test(data_augmentation = False, transformations=None):
     return X_train, X_test, y_train, y_test
 
 
+def get_train_test_manual_split(transformations=None):
+    """
+    Load training images and split them into a training and testing sets.
+    :param transformations: `list` used to specify with generated data to use when
+    data_augmentation is `True`. Leave to `None` to load everything.
+    Current possible values: `['mix', 'flip', 'shift', 'rotation']`
+    """
+    images = load_features(TRAINING_SAMPLES)
+    groundtruths = load_labels(TRAINING_SAMPLES)
+    images_gen, groundtruths_gen = load_generated_data(transformations)
+    X_train = images
+    y_train = groundtruths
+    half = int(len(images)/2)
+    X_test = images_gen[:half]
+    y_test = groundtruths_gen[:half]
+    validation_set = (images_gen[half:], groundtruths_gen[half:])
+    return X_train, X_test, y_train, y_test, validation_set
+
+
 def compute_metrics(y_true, y_pred):
     """
     Compute pixel-wise metrics on the predictions where arguments are 1d vectors.
@@ -39,6 +59,7 @@ def compute_metrics(y_true, y_pred):
     col = ['f1', 'acc', 'precision', 'recall']
     data = [[f1, acc, precision, recall]]
     return pd.DataFrame(data, columns=col, index=["metrics"])
+
 
 def compute_entire_images_metrics(y_true, y_pred):
     """

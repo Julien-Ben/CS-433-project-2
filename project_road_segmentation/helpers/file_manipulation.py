@@ -48,6 +48,7 @@ def load_labels(num_images):
     gt = load_images(TRAIN_LABELS_DIR, num_images)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
+
 def load_folder(path, grayscale=False):
     """
     Load every image in the folder at path with name format 'satImage'
