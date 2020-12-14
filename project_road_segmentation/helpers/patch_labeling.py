@@ -1,4 +1,5 @@
 from .constants import *
+from .image_processing import *
 import numpy as np
 from skimage.transform import resize
 import matplotlib.pyplot as plt
@@ -28,17 +29,22 @@ def patches_to_predictions(patches):
         for index_j, j in enumerate(i):
             patches_labeled[index_i].append(predict_patch(j))
     label_array = np.array(patches_labeled)
-    #return np.clip(label_array.reshape(TRAINING_IMG_SIZE,PATCH_SIZE,PATCH_SIZE).astype(np.float32), 0, 1)
-    return label_array.reshape(TRAINING_IMG_SIZE, PATCH_SIZE, PATCH_SIZE)
+    return np.clip(label_array.reshape(len(patches), int(TRAINING_IMG_SIZE/PATCH_SIZE),int(TRAINING_IMG_SIZE/PATCH_SIZE)).astype(np.float32), 0, 1)
 
 def label_to_patch_prediction(labels):
-    return patch_to_predictions(label_to_patches(labels))
-
-def visualize_patches(original, patch_array, number=5):
-    resized_patch = resize_images(patch_array, IMG_SIZE)
-    for i in np.random.randint(len(resized_patch), size=number):
-        plt.figure()
-        plt.imshow(concatenate_images(original[i], resized_patch[i]))
+    return patches_to_predictions(label_to_patches(labels))
 
 def resize_images(img_array, newsize):
-    return resize(img_array, (len(img_array), newsize, newsize))
+    return resize(img_array, (len(img_array), newsize, newsize), mode='constant', order=0)
+
+def visualize_patches(original, patch_array, number=5, resize=True):
+    for i in np.random.randint(len(original), size=number):
+        if resize:
+            resized_patch = resize_images(np.array(patch_array[i]), TRAINING_IMG_SIZE)[0]
+            plt.figure()
+            plt.imshow(concatenate_images(original[i], resized_patch), cmap='gray')
+        else:
+            plt.figure()
+            plt.imshow(original[i], cmap='gray')
+            plt.figure()
+            plt.imshow(patch_array[i], cmap='gray')
