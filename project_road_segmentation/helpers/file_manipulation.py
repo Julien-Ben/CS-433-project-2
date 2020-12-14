@@ -1,11 +1,9 @@
 import os
-import re
 import numpy as np
 import matplotlib.image as mpimg
 from PIL import Image, ImageOps
 from tqdm import tqdm
 from .constants import *
-from .image_processing import predict_patch
 
 
 def load_images(path, num_images):
@@ -48,6 +46,7 @@ def load_labels(num_images):
     gt = load_images(TRAIN_LABELS_DIR, num_images)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
+
 def load_folder(path, grayscale=False, num_images=False):
     """
     Load every image in the folder at path with name format 'satImage'
@@ -62,6 +61,7 @@ def load_folder(path, grayscale=False, num_images=False):
             img = np.array(img) / 255 #Scale value between 0 and 1
             imgs.append(img)
     return imgs
+
 
 def load_generated_data(transformations=None):
     """

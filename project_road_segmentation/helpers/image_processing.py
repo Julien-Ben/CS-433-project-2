@@ -1,84 +1,47 @@
-import os
-import re
 import numpy as np
-import matplotlib.image as mpimg
-from PIL import Image, ImageOps
-from tqdm import tqdm
 from .constants import *
-from .image_processing import predict_patch
+from tqdm import tqdm
+import os
+from PIL import Image
 
-def load_images(images, path, num_images):
-    for i in tqdm(range(num_images), desc="Loading " + path):
-        image_id = "satImage_%.3d" % (i+1)
-        image_filename = path + image_id + ".png"
-        if os.path.isfile(image_filename):
-            img = mpimg.imread(image_filename)
-            images.append(img)
+
+def predict_patch(p):
+    return 1 if p.mean() > ROAD_THRESHOLD_PATCH else 0
+
+
+def concatenate_images(img1, img2):
+    return np.concatenate((img1, img2), axis=1)
+
+
+def prediction_to_rgb_image(prediction):
+    return np.stack((prediction, prediction, prediction), axis=-1)
+
+
+def apply_masks_on_test(num_images=50, opacity=100):
+    for i in tqdm(range(num_images), desc="Loading"):
+        test_image_path = TEST_IMAGES_DIR + 'test_{}/test_{}.png'.format(i + 1, i + 1)
+        mask_path = PREDICTIONS_SAVE_DIR + "test_{}.png".format(i + 1)
+        if os.path.isfile(test_image_path) and os.path.isfile(mask_path):
+            img = Image.open(test_image_path)
+            mask = Image.open(mask_path)
+            masked = mask_image(img, mask, opacity)
+            masked_path = PREDICTIONS_SAVE_DIR + 'test_{}_with_mask.png'.format(i + 1)
+            masked.save(masked_path)
         else:
-            raise ValueError('File ' + image_filename + ' does not exist')
-
-    return np.asarray(images)
+            raise ValueError('Files {} or {} '.format(img, mask) + ' do not exist')
 
 
-def load_test_images(images, path=TEST_IMAGES_DIR, num_images=50):
-    for i in tqdm(range(num_images), desc="Loading " + path):
-        image_id = "test_{}/test_{}".format(i+1, i+1)
-        image_filename = path + image_id + ".png"
-        if os.path.isfile(image_filename):
-            img = mpimg.imread(image_filename)
-            images.append(img)
+def mask_image(img, mask, opacity=100):
+    mask = mask.convert('RGBA')
+    pixels = mask.getdata()
+
+    new_pixels = []
+    for px in pixels:
+        if px[0] == 255 and px[1] == 255 and px[2] == 255:
+            new_pixels.append((255, 0, 0, opacity))
         else:
-            raise ValueError('File ' + image_filename + ' does not exist')
+            new_pixels.append((0, 0, 0, 0))
 
-    return np.asarray(images)
-
-
-def load_features(images, num_images):
-    return load_images(images, TRAIN_IMAGES_DIR, num_images)
-
-
-def load_labels(gt, num_images):
-    """
-    Loads all labels.
-    Since the pixels are not perfectly black and white we use an artificial threshold
-    """
-    load_images(gt, TRAIN_LABELS_DIR, num_images)
-    return list(1.0*(np.array(gt) > ROAD_THRESHOLD_PIXEL))
-
-def load_folder(imgs, path, grayscale=False):
-    """
-    Load every image in the folder at path with name format 'satImage'
-    """
-    image_names = sorted([path + image for image in os.listdir(path) if 'satImage' in image])
-    for image_name in tqdm(image_names, desc="Loading " + path):
-        img = Image.open(image_name).convert('RGB') #Convert rgba to rgb
-        if grayscale:
-            img = ImageOps.grayscale(img) #Convert to grayscale
-        img = np.array(img) / 255 #Scale value between 0 and 1
-        imgs.append(img)
-    # return imgs
-
-def load_generated_data(images, groundtruths, transformations=None):
-    """
-    :param transformations: list of transformation folders to load, if None or empty loads everything, 
-    current possible values: ['mix', 'flip', 'shift', 'rotation']
-    """
-    # List all possible folders we can load
-    # Condition using isdir to exclude files like .DS_Store etc.
-    folders_to_load = [folder for folder in os.listdir(GENERATION_DIR) if os.path.isdir(GENERATION_DIR + folder)]
-
-    # If specific folders are specified
-    if transformations != None and len(transformations) > 0:
-        folders_to_load = [folder for folder in transformations if folder in folders_to_load]
-    
-    # images = []
-    # groundtruths = []
-    for folder in folders_to_load:
-        image_path = GENERATION_DIR + folder + '/images/'
-        gt_path = GENERATION_DIR + folder + '/groundtruth/'
-        load_folder(images, image_path)
-        load_folder(groundtruths, gt_path, grayscale=True)
-        
-    return images, groundtruths
-
-
+    mask.putdata(new_pixels)
+    img.paste(mask, None, mask)
+    return img
