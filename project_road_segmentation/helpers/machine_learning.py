@@ -18,7 +18,7 @@ def get_train_test(images, groundtruths, data_augmentation=False, transformation
     load_features(TRAINING_SAMPLES, images=images, low_memory=True)
     load_labels(TRAINING_SAMPLES, images=groundtruths, low_memory=True)
     if data_augmentation:
-        load_generated_data(images, groundtruths, transformations)
+        load_generated_data(transformations, images=images, groundtruth=groundtruths, low_memory=True)
     print('Training features shape : ', np.array(images).shape)
     print('Training labels shape : ', np.array(groundtruths).shape)
     idx = np.arange(len(images))

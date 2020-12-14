@@ -1,10 +1,21 @@
 # Road Segmentation - ML Project 2 
 
-## On the empirical comparison between a data-augmented U-Net and a patch-wise CNN
+<!-- ## On the empirical comparison between a data-augmented U-Net and a patch-wise CNN -->
 
 ## Introduction
 
-![Benjamin Bannekat](https://octodex.github.com/images/bannekat.png)
+<table>
+    <tr>
+        <td>
+            <img src="/assets/readme_img_1.png" width="300" height="300" />
+        </td>
+        <td>
+            <img src="/assets/readme_img_2.png" width="300" height="300" />
+        </td>
+    </tr>
+</table>
+
+In the context of the [EPFL Road Segmentation challenge](https://www.aicrowd.com/challenges/epfl-ml-road-segmentation)
 
 ## Table of contents
 * Folder architecture
