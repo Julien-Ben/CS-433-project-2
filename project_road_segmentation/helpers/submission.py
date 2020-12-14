@@ -9,14 +9,13 @@ from .constants import *
 from .file_manipulation import *
 
 
-def predict_submissions(model):
+def predict_submissions(model, write_masks=True, submisison_file=None):
     """
     Given a model, runs the whole pipeline to create a file containing the label of each patch,
     ready for the AIcrowd submission.
     """
     #Load 608x608 test images 
-    images608 = []
-    load_test_images(images608)
+    images608 = load_test_images()
     
     #Split each of them into 4 400x400 images
     images400 = split_608_to_400(images608)
@@ -32,13 +31,16 @@ def predict_submissions(model):
     masks608 = np.asarray([(mask >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0 for mask in masks608])
  
     #Convert mask to patch labels and write them into the file submission.csv
-    if not os.path.isdir(SUBMISSIONS_DIR):
-        os.mkdir(SUBMISSIONS_DIR)
-    now = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-    make_prediction(masks608, filename=f"{SUBMISSIONS_DIR}submission_{now}.csv")
+    if not submisison_file:
+        if not os.path.isdir(SUBMISSIONS_DIR):
+            os.mkdir(SUBMISSIONS_DIR)
+        now = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
+        submisison_file = f"{SUBMISSIONS_DIR}submission_{now}.csv"
+    make_prediction(masks608, filename=submisison_file)
     
     # Write the masks to folder
-    write_predictions(masks608)
+    if write_masks:
+        write_predictions(masks608)
 
 
 def split_608_to_400(images608):
