@@ -130,5 +130,6 @@ dmypy.json
 
 # Mac spam
 .DS_Store
+model_metrics.md
 
 .vscode
