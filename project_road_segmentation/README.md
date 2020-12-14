@@ -99,17 +99,26 @@ Here are the main subfolders description:
 ## Training pipeline
 
 Here is described the pipeline used to train the model and fine tune the hyperparameters of our final model.
+
 * [Data augmentation](#data-augmentation)
 * [Training](#training)
 * [Submission](#submission)
 
 ### Data augmentation
-Tensorflow keras ImageDataGenerator
+According to the paper that first described the U-Net architecture [[1]](https://arxiv.org/pdf/1505.04597.pdf), the performance depends heavily on data augmentation.  We chose to only perform the following transformations:
+* rotation
+* shift
+* flip
+* combination of the previous transformations
+
+The script used to generate new data is illustrated in the `data_augmentation.ipynb` notebook, using the Tensorflow preprocessing class `ImageDataGenerator`. The generated images can be found in the `data/generated` folder.
 
 ### Training
+
+Our models are defined in the `model` folder. 
 pipeline.ipynb
 Tensoflow Dataset API
 
 ### Submission
 
-![asdas](assets/submission_visualisation.png)
+![submission process](assets/submission_visualisation.png)

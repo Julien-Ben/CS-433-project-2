@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.image import apply_affine_transform, apply_b
 import pandas as pd
 import numpy as np
 
-def get_train_test(images, groundtruths, data_augmentation=False, transformations=None):
+def get_train_test(images=[], groundtruths=[], data_augmentation=False, transformations=None, low_memory=False):
     """
     Load training images and split them into a training and testing sets.
     :param data_augmentation: set to `True` to use generated data
@@ -15,8 +15,14 @@ def get_train_test(images, groundtruths, data_augmentation=False, transformation
     Current possible values: `['mix', 'flip', 'shift', 'rotation']`
     """
     np.random.seed(SEED)
-    load_features(TRAINING_SAMPLES, images=images, low_memory=True)
-    load_labels(TRAINING_SAMPLES, images=groundtruths, low_memory=True)
+    
+    if low_memory:
+        load_features(TRAINING_SAMPLES, images=images, low_memory=True)
+        load_labels(TRAINING_SAMPLES, images=groundtruths, low_memory=True)
+    else:
+        images = list(load_features(TRAINING_SAMPLES))
+        groundtruths = list(load_labels(TRAINING_SAMPLES))
+
     if data_augmentation:
         load_generated_data(transformations, images=images, groundtruth=groundtruths, low_memory=True)
     print('Training features shape : ', np.array(images).shape)
@@ -25,7 +31,12 @@ def get_train_test(images, groundtruths, data_augmentation=False, transformation
     np.random.shuffle(idx)
     split = int(TRAINING_SIZE * len(images))
     train_idx, test_idx = idx[:split], idx[split:] 
-    return train_idx, test_idx
+    if low_memory:
+        return train_idx, test_idx
+    else:
+        images = np.array(images)
+        groundtruths = np.array(groundtruths)
+        return images[train_idx], groundtruths[train_idx], images[test_idx], groundtruths[test_idx]
 
 def get_train_test_feature_augmentation(rotations=0, thetas=[], feature_augmentation=0, brightnesses=[]):
     """
