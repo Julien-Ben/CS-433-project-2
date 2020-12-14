@@ -1,6 +1,15 @@
-# ML Project 1 documentation
+# Road Segmentation - ML Project 2 
 
-## 1 - Organisation of the folder :
+## On the empirical comparison between a data-augmented U-Net and a patch-wise CNN
+
+## Introduction
+
+![Benjamin Bannekat](https://octodex.github.com/images/bannekat.png)
+
+## Table of contents
+* Folder architecture
+
+## 1 - Folder architecture :
 
 This folder contains several python modules, categorized as follows :
 

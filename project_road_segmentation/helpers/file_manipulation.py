@@ -37,7 +37,10 @@ def load_test_images(path=TEST_IMAGES_DIR, num_images=50, images=[], low_memory=
 
 
 def load_features(num_images, images=[], low_memory=False):
-    return load_images(TRAIN_IMAGES_DIR, num_images, images=images, low_memory=low_memory)
+    if low_memory:
+        load_images(TRAIN_IMAGES_DIR, num_images, images=images, low_memory=low_memory)
+    else:
+        return load_images(TRAIN_IMAGES_DIR, num_images)
 
 
 def load_labels(num_images, images=[], low_memory=False):
@@ -45,8 +48,15 @@ def load_labels(num_images, images=[], low_memory=False):
     Loads all labels.
     Since the pixels are not perfectly black and white we use an artificial threshold
     """
-    gt = load_images(TRAIN_LABELS_DIR, num_images, images=images, low_memory=low_memory)
-    return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
+    if low_memory:
+        load_images(TRAIN_LABELS_DIR, num_images, images=images, low_memory=low_memory)
+        for i in range(num_images):
+            for x in range(TRAINING_IMG_SIZE):
+                for y in range(TRAINING_IMG_SIZE):
+                    images[i][x][y] = 1*(images[i][x][y] > ROAD_THRESHOLD_PATCH)
+    else:
+        gt = load_images(TRAIN_LABELS_DIR, num_images)
+        return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
 
 def load_folder(path, grayscale=False, num_images=False, images=[], low_memory=False):
@@ -86,8 +96,13 @@ def load_generated_data(transformations=None, images=[], groundtruth=[], low_mem
     for folder in folders_to_load:
         image_path = GENERATION_DIR + folder + '/images/'
         gt_path = GENERATION_DIR + folder + '/groundtruth/'
-        images.append(load_folder(image_path))
-        groundtruth.append(load_folder(gt_path, grayscale=True))
+
+        if low_memory:
+            load_folder(image_path, images=images, low_memory=True)
+            load_folder(gt_path, grayscale=True, images=groundtruth, low_memory=True)
+        else:
+            images.append(load_folder(image_path))
+            groundtruth.append(load_folder(gt_path, grayscale=True))
 
     if not low_memory:
         return np.concatenate(images,axis=0), np.concatenate(groundtruth, axis=0)
