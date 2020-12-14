@@ -15,17 +15,12 @@ def get_train_test(images, groundtruths, data_augmentation=False, transformation
     Current possible values: `['mix', 'flip', 'shift', 'rotation']`
     """
     np.random.seed(SEED)
-    load_features(images, TRAINING_SAMPLES)
-    load_labels(groundtruths, TRAINING_SAMPLES)
+    load_features(TRAINING_SAMPLES,images=images, low_memory=True)
+    load_labels(TRAINING_SAMPLES, images=groundtruths, low_memory=True)
     if data_augmentation:
         load_generated_data(images, groundtruths, transformations)
-        # images = np.vstack([images, images_gen])
-        # groundtruths = np.vstack([groundtruths, groundtruths_gen])
     print('Training features shape : ', np.array(images).shape)
     print('Training labels shape : ', np.array(groundtruths).shape)
-    # X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
-    #                                                     train_size=TRAINING_SIZE, random_state=SEED)
-    # return X_train, X_test, y_train, y_test
     idx = np.arange(len(images))
     np.random.shuffle(idx)
     split = int(TRAINING_SIZE * len(images))

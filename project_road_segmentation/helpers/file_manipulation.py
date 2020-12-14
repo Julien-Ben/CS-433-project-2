@@ -6,8 +6,9 @@ from tqdm import tqdm
 from .constants import *
 
 
-def load_images(path, num_images):
-    images = []
+def load_images(path, num_images, images=[], low_memory=False):
+    if not low_memory:
+        images = []
     for i in tqdm(range(num_images), desc="Loading " + path):
         image_id = "satImage_%.3d" % (i+1)
         image_filename = path + image_id + ".png"
@@ -16,12 +17,13 @@ def load_images(path, num_images):
             images.append(img)
         else:
             raise ValueError('File ' + image_filename + ' does not exist')
+    if not low_memory:
+        return np.asarray(images)
 
-    return np.asarray(images)
 
-
-def load_test_images(path=TEST_IMAGES_DIR, num_images=50):
-    images = []
+def load_test_images(path=TEST_IMAGES_DIR, num_images=50, images=[], low_memory=False):
+    if not low_memory:
+        images = []
     for i in tqdm(range(num_images), desc="Loading " + path):
         image_id = "test_{}/test_{}".format(i+1, i+1)
         image_filename = path + image_id + ".png"
@@ -30,40 +32,42 @@ def load_test_images(path=TEST_IMAGES_DIR, num_images=50):
             images.append(img)
         else:
             raise ValueError('File ' + image_filename + ' does not exist')
-
-    return np.asarray(images)
-
-
-def load_features(num_images):
-    return load_images(TRAIN_IMAGES_DIR, num_images)
+    if not low_memory:
+        return np.asarray(images)
 
 
-def load_labels(num_images):
+def load_features(num_images, images=[], low_memory=False):
+    return load_images(TRAIN_IMAGES_DIR, num_images, images=images, low_memory=low_memory)
+
+
+def load_labels(num_images, images=[], low_memory=False):
     """
     Loads all labels.
     Since the pixels are not perfectly black and white we use an artificial threshold
     """
-    gt = load_images(TRAIN_LABELS_DIR, num_images)
+    gt = load_images(TRAIN_LABELS_DIR, num_images, images=images, low_memory=low_memory)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
 
-def load_folder(path, grayscale=False, num_images=False):
+def load_folder(path, grayscale=False, num_images=False, images=[], low_memory=False):
     """
     Load every image in the folder at path with name format 'satImage'
     """
-    imgs = []
+    if not low_memory:
+        images = []
     image_names = sorted([path + image for image in os.listdir(path) if 'satImage' in image])
     for image_name in tqdm(image_names, desc="Loading " + path):
-        if not num_images or len(imgs) < num_images: #If no num_images is specified or if the limit is not yet reached
+        if not num_images or len(images) < num_images: #If no num_images is specified or if the limit is not yet reached
             img = Image.open(image_name).convert('RGB') #Convert rgba to rgb
             if grayscale:
                 img = ImageOps.grayscale(img) #Convert to grayscale
             img = np.array(img) / 255 #Scale value between 0 and 1
-            imgs.append(img)
-    return imgs
+            images.append(img)
+    if not low_memory:
+        return images
 
 
-def load_generated_data(transformations=None):
+def load_generated_data(transformations=None, images=[], groundtruth=[], low_memory=False):
     """
     :param transformations: list of transformation folders to load, if None or empty loads everything, 
     current possible values: ['mix', 'flip', 'shift', 'rotation']
@@ -76,11 +80,14 @@ def load_generated_data(transformations=None):
     if transformations != None and len(transformations) > 0:
         folders_to_load = [folder for folder in transformations if folder in folders_to_load]
     
-    images = []
-    groundtruths = []
+    if not low_memory:
+        images = []
+        groundtruth = []
     for folder in folders_to_load:
         image_path = GENERATION_DIR + folder + '/images/'
         gt_path = GENERATION_DIR + folder + '/groundtruth/'
         images.append(load_folder(image_path))
-        groundtruths.append(load_folder(gt_path, grayscale=True))
-    return np.concatenate(images,axis=0), np.concatenate(groundtruths, axis=0)
+        groundtruth.append(load_folder(gt_path, grayscale=True))
+
+    if not low_memory:
+        return np.concatenate(images,axis=0), np.concatenate(groundtruth, axis=0)
