@@ -5,28 +5,31 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 import pandas as pd
 import numpy as np
 
-def get_train_test(data_augmentation=False, transformations=None):
+def get_train_test(images, groundtruths, data_augmentation=False, transformations=None):
     """
     Load training images and split them into a training and testing sets.
     :param data_augmentation: set to `True` to use generated data
     :param transformation: `list` used to specify with generated data to use when 
     data_augmentation is `True`. Leave to `None` to load everything. 
-    Current possible values: `['mix',  'mix_big', 'flip', 'shift', 'rotation', 'rotation_big',, 'hard_raw', 'hard_mix', ]`
+    Current possible values: `['mix', 'flip', 'shift', 'rotation']`
     """
-    images = load_features(TRAINING_SAMPLES)
-    groundtruths = load_labels(TRAINING_SAMPLES)
+    np.random.seed(SEED)
+    load_features(images, TRAINING_SAMPLES)
+    load_labels(groundtruths, TRAINING_SAMPLES)
     if data_augmentation:
-        images_gen, groundtruths_gen = load_generated_data(transformations)
-        images = np.vstack([images, images_gen])
-        del images_gen
-        groundtruths = np.vstack([groundtruths, groundtruths_gen])
-        del groundtruths_gen
-    print('Training features shape : ', images.shape)
-    print('Training labels shape : ', groundtruths.shape)
-    X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
-                                                        train_size=TRAINING_SIZE, random_state=SEED)
-    return X_train, X_test, y_train, y_test
-
+        load_generated_data(images, groundtruths, transformations)
+        # images = np.vstack([images, images_gen])
+        # groundtruths = np.vstack([groundtruths, groundtruths_gen])
+    print('Training features shape : ', np.array(images).shape)
+    print('Training labels shape : ', np.array(groundtruths).shape)
+    # X_train, X_test, y_train, y_test = train_test_split(images, groundtruths,
+    #                                                     train_size=TRAINING_SIZE, random_state=SEED)
+    # return X_train, X_test, y_train, y_test
+    idx = np.arange(len(images))
+    np.random.shuffle(idx)
+    split = int(TRAINING_SIZE * len(images))
+    train_idx, test_idx = idx[:split], idx[split:] 
+    return train_idx, test_idx
 
 def compute_metrics(y_true, y_pred):
     """

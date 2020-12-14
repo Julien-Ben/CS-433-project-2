@@ -13,11 +13,10 @@ def predict_submissions(model):
     """
     Given a model, runs the whole pipeline to create a file containing the label of each patch,
     ready for the AIcrowd submission.
-    Saves the csv in the folder `SUBMISSIONS_DIR`
-    Writes the predicted masks in the folder `PREDICTIONS_SAVE_DIR`
     """
     #Load 608x608 test images 
-    images608 = load_test_images()
+    images608 = []
+    load_test_images(images608)
     
     #Split each of them into 4 400x400 images
     images400 = split_608_to_400(images608)
@@ -81,13 +80,13 @@ def merge_masks400(masks400):
         img1, img2, img3, img4 = [masks400[idx + i] for i in range(4)]
         
         #Copy parts that belong to a single mask into the final mask, 
-        #These parts correspond to corners of the final mask
+        #These parts correspond to the corner of the final mask
         mask608[:thres2, :thres2] = img1[:thres2, :thres2]
         mask608[:thres2, thres1:] = img2[:thres2, thres3:]
         mask608[thres1:, :thres2] = img3[thres3:, :thres2]
         mask608[thres1:, thres1:] = img4[thres3:, thres3:]
         
-        #Average parts that belong to multiple masks
+        #Average parts taht belong to multiple masks
         mask608[:thres2, thres2:thres1] = (img1[:thres2, thres2:] + img2[:thres2, :thres3]) / 2
         mask608[thres2:thres1, :thres2] = (img1[thres2:, :thres2] + img3[:thres3, :thres2]) / 2
         mask608[thres2:thres1, thres2:thres1] = (img1[thres2:, thres2:] + img2[thres2:, :thres3] +

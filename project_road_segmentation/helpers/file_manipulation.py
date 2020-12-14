@@ -48,18 +48,19 @@ def load_labels(num_images):
     gt = load_images(TRAIN_LABELS_DIR, num_images)
     return 1.0*(gt > ROAD_THRESHOLD_PIXEL)
 
-def load_folder(path, grayscale=False):
+def load_folder(path, grayscale=False, num_images=False):
     """
     Load every image in the folder at path with name format 'satImage'
     """
     imgs = []
     image_names = sorted([path + image for image in os.listdir(path) if 'satImage' in image])
     for image_name in tqdm(image_names, desc="Loading " + path):
-        img = Image.open(image_name).convert('RGB') #Convert rgba to rgb
-        if grayscale:
-            img = ImageOps.grayscale(img) #Convert to grayscale
-        img = np.array(img) / 255 #Scale value between 0 and 1
-        imgs.append(img)
+        if not num_images or len(imgs) < num_images: #If no num_images is specified or if the limit is not yet reached
+            img = Image.open(image_name).convert('RGB') #Convert rgba to rgb
+            if grayscale:
+                img = ImageOps.grayscale(img) #Convert to grayscale
+            img = np.array(img) / 255 #Scale value between 0 and 1
+            imgs.append(img)
     return imgs
 
 def load_generated_data(transformations=None):
