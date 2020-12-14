@@ -27,20 +27,31 @@ For that, we trained a U-Net model that predicts each pixel's class as well as a
 
 1. [Submission reproduction](#submission-reproduction)
 2. [Folder architecture](#folder-architecture)
-3. [ Training pipeline](#training-pipeline)
+3. [Training pipeline](#training-pipeline)
+    * [Data augmentation](#data-augmentation)
+    * [Training](#training)
+    * [Submission](#submission)
 
 ## Submission reproduction
 
-First install the required libraris and packages used in this project:
+First install the required libraries and packages used in this project:
 ```
-$ pip install -r requirements.txt
+pip install virtualenv
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 The setup is done and all is left is to create the predictions on the test set:
 ```
-$ python run.py
+python run.py
 ```
 It will load the model, run predictions on the test set and create a `.csv` containing a label for each patch.
 The submission file is created in the top folder as `submission.csv`. Submitting this file on AICrowd yields an F1-score of 90%, identical to our submission [#109366](https://www.aicrowd.com/challenges/epfl-ml-road-segmentation/submissions/109366).
+
+Once you are done, quit the virtual environnment with
+```
+deactivate
+```
 
 ## Folder architecture
 
@@ -115,10 +126,16 @@ The script used to generate new data is illustrated in the `data_augmentation.ip
 
 ### Training
 
-Our models are defined in the `model` folder. 
-pipeline.ipynb
-Tensoflow Dataset API
+Our models are defined in the `model` folder. The `pipeline.ipynb` notebook can be used to train a new model, using the Keras module of Tensorflow. The model used for our final submission has been trained using the data augmentated folders `hard_mix`, `rotation`, `mix` and `flip`, for a total of 900 images. The Adam optimizer was used along with the focal Tversky loss, defined in `helpers/loss_functions.py`, with $\alpha = 0.6$ and $\gamma = 0.75$. Both `EarlyStopping` and `ReduceLROnPlateau` callbacks were set on 250 epochs.
 
 ### Submission
+
+Since our model is fitted for the size of the training images (400x400) we had to come up with a method to segment the test images, that have a size of 608x608. For that we chose the following method:
+1. Split the image in 4 smaller images of size 400x400
+2. Segment individually each image
+3. Merge the 4 masks by averaging the overlapping parts
+4. Binarize the outputs between 0 and 1 and assign a label to each patch, where a patch is labeled as road is the proportion of `road` pixel is greater than the threshold `ROAD_THRESHOLD_PATCH` defined in `helpers/constants.py`.
+
+This process is implemented by the function `predict_submissions` defined in `helpers/submission.py` and illustred bellow:
 
 ![submission process](assets/submission_visualisation.png)
