@@ -7,29 +7,27 @@ from tensorflow.keras.layers import MaxPooling2D, GlobalMaxPool2D
 from tensorflow.keras.layers import concatenate, add
 
 IMAGE_SIZE = 400
+KERNEL_SIZE = (3, 3)
+FIRST_KERNEL_SIZE = (5, 5)
+DROPOUT_RATE = 0.2
+LEAKYRATE = 0.05
 
 
-def cnn_ben(img_size=IMAGE_SIZE):
-    kernel_size = (3, 3)
-    first_kernel_size = (5, 5)
-    dropout = 0.2
-    leakyrate = 0.05
-    model = tf.keras.models.Sequential([  # Note the input shape is the desired size of the image 200x200 with 3 bytes color
-    # This is the first convolution
-    tf.keras.layers.Conv2D(64, first_kernel_size, activation=LeakyReLU(alpha=leakyrate), input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), padding='same'),
-    tf.keras.layers.Conv2D(128, kernel_size, activation=LeakyReLU(alpha=leakyrate), padding='same'),
-    tf.keras.layers.MaxPooling2D(2, 2),
-    # The second convolution
-    tf.keras.layers.Conv2D(128, kernel_size, activation=LeakyReLU(alpha=leakyrate), padding='same'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    Dropout(dropout),
-    # The third convolutiont
-    tf.keras.layers.Conv2D(256, kernel_size, activation=LeakyReLU(alpha=leakyrate), padding='same'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    Dropout(dropout),
-    # The fourth convolution
-    tf.keras.layers.Conv2D(64, kernel_size, activation=LeakyReLU(alpha=leakyrate), padding='same'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    Dropout(dropout),
-    tf.keras.layers.Conv2D(1, kernel_size, activation='sigmoid', padding='same'),])
+def cnn_patch_prediction():
+    input_img = Input((IMAGE_SIZE, IMAGE_SIZE, 3), name='img')
+    l1 = Conv2D(64, first_kernel_size, activation=LeakyReLU(alpha=leakyrate), padding='same')(input_img)
+    l1 = convolution_layer(l1, 128, dropout=False)
+    l2 = convolution_layer(l1, 128)
+    l3 = convolution_layer(l2, 256)
+    l4 = convolution_layer(l3, 64)
+    outputs = Conv2D(1, kernel_size, activation='sigmoid', padding='same')(l4)
+    model = Model(inputs=[input_img], outputs=[outputs])
     return model
+
+
+def convolution_layer(input, n_filters, dropout=True):
+    output = Conv2D(n_filters, KERNEL_SIZE, activation=LeakyReLU(alpha=LEAKYRATE), padding='same')(input)
+    output = MaxPooling2D(2, 2)(output)
+    if dropout:
+        output = Dropout(DROPOUT_RATE)(output)
+    return output

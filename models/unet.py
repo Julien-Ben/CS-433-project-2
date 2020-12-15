@@ -9,7 +9,7 @@ from tensorflow.keras.layers import concatenate, add
 IMAGE_SIZE = 400
 
 
-def unet_2(n_filters=16, dropout=0.1, batchnorm=True, img_size=IMAGE_SIZE, kernel_size=3, feature_augmentation=1):
+def unet(n_filters=16, dropout=0.1, batchnorm=True, img_size=IMAGE_SIZE, kernel_size=3, feature_augmentation=1):
     input_img = Input((img_size, img_size, 3*feature_augmentation), name='img')
     # Contracting Path
     pows = [1, 2, 4, 8]
