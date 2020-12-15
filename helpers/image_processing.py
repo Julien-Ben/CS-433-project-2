@@ -39,7 +39,7 @@ def apply_masks_on_test(opacity=100):
             masked_path = PREDICTIONS_SAVE_DIR + 'test_{}_with_mask.png'.format(i + 1)
             masked.save(masked_path)
         else:
-            raise ValueError('Files {} or {} '.format(img, mask) + ' do not exist')
+            raise ValueError('Files {} or {} '.format(test_image_path, mask_path) + ' do not exist')
 
 
 def mask_image(img, mask, opacity=100):

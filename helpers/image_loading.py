@@ -75,13 +75,13 @@ def load_generated_data(transformations=None, images=[], groundtruth=[], low_mem
         image_path = GENERATION_DIR + folder + '/images/'
         gt_path = GENERATION_DIR + folder + '/groundtruth/'
         load_images(image_path, images=images, low_memory=True)
-        load_images(gt_path, images=groundtruth, low_memory=True)
+        load_images(gt_path, images=groundtruth, low_memory=True, grayscale=True)
 
     if not low_memory:
         return np.asarray(images), np.asarray(groundtruth)
 
 
-def load_images(path, num_images=None, filename_format="satImage_{:03d}.png", images=[], low_memory=False):
+def load_images(path, num_images=None, filename_format="satImage_{:03d}.png", images=[], low_memory=False, grayscale=False):
     """
     Loads all images in some folder. It is assume that said folder contains only those images and nothing else.
     :param path: Path of the folder from which to load the images
@@ -103,8 +103,8 @@ def load_images(path, num_images=None, filename_format="satImage_{:03d}.png", im
         image_filename = path + image_id
         if os.path.isfile(image_filename):
             img = Image.open(image_filename)
-            if len(img.shape) == 3 and img.shape[2] > 3:
-                img = img.convert('RGB')  # For RGBA images
+            if img.mode == 'RGBA':
+                img = img.convert('L' if grayscale else 'RGB')  # For RGBA images
             img = np.array(img)/255  # Scale between 0 and 1
             images.append(img)
         else:

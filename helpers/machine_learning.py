@@ -30,17 +30,19 @@ def get_train_test(images=[], groundtruths=[], data_augmentation=False, transfor
 
     if data_augmentation:
         load_generated_data(transformations, images=images, groundtruth=groundtruths, low_memory=True)
-    print('Training features shape : ', np.array(images).shape)
-    print('Training labels shape : ', np.array(groundtruths).shape)
     idx = np.arange(len(images))
     np.random.shuffle(idx)
     split = int(TRAINING_SIZE * len(images))
     train_idx, test_idx = idx[:split], idx[split:] 
     if low_memory:
+        print('Training features length : ', len(images))
+        print('Training labels length : ', len(groundtruths))
         return train_idx, test_idx
     else:
         images = np.array(images)
         groundtruths = np.array(groundtruths)
+        print('Training features shape : ', images.shape)
+        print('Training labels shape : ', groundtruths.shape)
         return images[train_idx], groundtruths[train_idx], images[test_idx], groundtruths[test_idx]
 
 
@@ -145,11 +147,11 @@ def augment_data(images, theta, is_RGB):
     print(is_RGB, theta)
     for im in images:
         if not is_RGB:
-          im = im[:, :, None]
+            im = im[:, :, None]
         tmp = apply_affine_transform(im, theta=theta, fill_mode='reflect')
         if is_RGB:
-          tmp = tmp[None, :, :, :]
+            tmp = tmp[None, :, :, :]
         else:
-          tmp = (tmp.squeeze())[None, :, :]
+            tmp = (tmp.squeeze())[None, :, :]
         augmented = np.r_[augmented, tmp]
     return augmented

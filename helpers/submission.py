@@ -45,8 +45,8 @@ def split_608_to_400(images608):
     | 3 | 4 |
     :param images608: list of 608x608 images
     """
-    thres1 = TRAINING_IMG_SIZE # End of the top-left masks
-    thres2 = TEST_IMG_SIZE - TRAINING_IMG_SIZE # Start of the bottom right masks
+    thres1 = TRAINING_IMG_SIZE  # End of the top-left masks
+    thres2 = TEST_IMG_SIZE - TRAINING_IMG_SIZE  # Start of the bottom right masks
     
     images400 = []
     for img in images608:
@@ -73,13 +73,13 @@ def merge_masks400(masks400, patches_predicted=False):
         train_size = TRAINING_IMG_SIZE
         test_size = TEST_IMG_SIZE
         
-    thres1 = train_size # End of the top-left masks
-    thres2 = test_size - train_size # Start of the bottom-right masks
+    thres1 = train_size  # End of the top-left masks
+    thres2 = test_size - train_size  # Start of the bottom-right masks
     thres3 = thres1 - thres2
     
     list_masks608 = []
     for idx in range(0, len(masks400), 4):
-        mask608 = np.empty((test_size, test_size), dtype='float32') # Initialize a 608x608 mask
+        mask608 = np.empty((test_size, test_size), dtype='float32')  # Initialize a 608x608 mask
         img1, img2, img3, img4 = [masks400[idx + i] for i in range(4)]
         
         # Copy parts that belong to a single mask into the final mask,
@@ -89,11 +89,11 @@ def merge_masks400(masks400, patches_predicted=False):
         mask608[thres1:, :thres2] = img3[thres3:, :thres2]
         mask608[thres1:, thres1:] = img4[thres3:, thres3:]
         
-        # Average parts taht belong to multiple masks
+        # Average parts that belong to multiple masks
         mask608[:thres2, thres2:thres1] = (img1[:thres2, thres2:] + img2[:thres2, :thres3]) / 2
         mask608[thres2:thres1, :thres2] = (img1[thres2:, :thres2] + img3[:thres3, :thres2]) / 2
         mask608[thres2:thres1, thres2:thres1] = (img1[thres2:, thres2:] + img2[thres2:, :thres3] +
-                                                 img3[:thres3,thres2:] + img4[:thres3, :thres3]) / 4
+                                                 img3[:thres3, thres2:] + img4[:thres3, :thres3]) / 4
         mask608[thres2:thres1, thres1:] = (img2[thres2:, thres3:] + img4[:thres3, thres3:]) / 2
         mask608[thres1:, thres2:thres1] = (img3[thres3:, thres2:] + img4[thres3:, :thres3]) / 2
         list_masks608.append(mask608)
@@ -128,7 +128,7 @@ def make_patch_list(img_pred, patches_predicted=False):
     image_height = img_pred.shape[1]
     if patches_predicted:
         img_patch_width = int(PATCH_SIZE / PATCH_SIZE)
-    else :
+    else:
         img_patch_width = PATCH_SIZE
     if (image_width % img_patch_width != 0) or (image_height % img_patch_width != 0):
         raise ValueError("Image cannot be divided in patches of this size")
@@ -147,5 +147,3 @@ def write_predictions(predictions, folder=PREDICTIONS_SAVE_DIR):
     print(f"Writing predictions in folder {folder}")
     for i, pred in enumerate(predictions):
         mpimg.imsave(f"{folder}test_{i+1}.png", pred, cmap='gray')
-
-

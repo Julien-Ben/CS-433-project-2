@@ -47,9 +47,9 @@ def patches_to_predictions(patches):
         for index_j, j in enumerate(i):
             patches_labeled[index_i].append(predict_patch(j))
     label_array = np.array(patches_labeled)
-    return np.clip(label_array.reshape(len(patches),
-                                       (int(TRAINING_IMG_SIZE/PATCH_SIZE),
-                                       int(TRAINING_IMG_SIZE/PATCH_SIZE))).astype(np.float32), 0, 1)
+    return np.clip(label_array.reshape((len(patches),
+                                        int(TRAINING_IMG_SIZE/PATCH_SIZE),
+                                        int(TRAINING_IMG_SIZE/PATCH_SIZE))).astype(np.float32), 0, 1)
 
 
 def resize_images(img_array, newsize):
