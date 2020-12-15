@@ -1,27 +1,32 @@
-from .constants import *
-from .file_manipulation import *
+from .image_loading import *
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 from tensorflow.keras.preprocessing.image import apply_affine_transform, apply_brightness_shift
 import pandas as pd
 import numpy as np
 
+
 def get_train_test(images=[], groundtruths=[], data_augmentation=False, transformations=None, low_memory=False):
     """
     Load training images and split them into a training and testing sets.
+    :param images: If low_memory is true, will fill the argument instead of creating a new array. Instead does nothing
+    :param groundtruths: Same as groundtruths
     :param data_augmentation: set to `True` to use generated data
     :param transformations: `list` used to specify with generated data to use when
-    data_augmentation is `True`. Leave to `None` to load everything. 
-    Current possible values: `['mix', 'flip', 'shift', 'rotation']`
+    data_augmentation is `True`. Leave to `None` to load everything.
+    current possible values: ['flip', 'hard_mix', 'hard_raw', 'mix', 'mix_big', 'rotation', 'rotation_big', 'shift']
+    :param low_memory: If True and an array is given as argument,
+    will load images while saving as much RAM as possible
+    :return: If low_memory, a list of indexes, else train and validation sets as numpy arrays
     """
     np.random.seed(SEED)
     
     if low_memory:
-        load_features(TRAINING_SAMPLES, images=images, low_memory=True)
-        load_labels(TRAINING_SAMPLES, images=groundtruths, low_memory=True)
+        load_features(N_TRAIN_IMAGES, images=images, low_memory=True)
+        load_labels(N_TRAIN_IMAGES, images=groundtruths, low_memory=True)
     else:
-        images = list(load_features(TRAINING_SAMPLES))
-        groundtruths = list(load_labels(TRAINING_SAMPLES))
+        images = list(load_features(N_TRAIN_IMAGES))
+        groundtruths = list(load_labels(N_TRAIN_IMAGES))
 
     if data_augmentation:
         load_generated_data(transformations, images=images, groundtruth=groundtruths, low_memory=True)
@@ -38,14 +43,45 @@ def get_train_test(images=[], groundtruths=[], data_augmentation=False, transfor
         groundtruths = np.array(groundtruths)
         return images[train_idx], groundtruths[train_idx], images[test_idx], groundtruths[test_idx]
 
+
+def compute_metrics(y_true, y_pred):
+    """
+    Compute pixel-wise metrics on the predictions where arguments are 1d vectors.
+    :param y_true: 1d vector with the true labels
+    :param y_pred: 1d vector with the predictions
+    :return: Metrics for the vector
+    """
+    f1 = f1_score(y_true, y_pred)
+    acc = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    col = ['f1', 'acc', 'precision', 'recall']
+    data = [[f1, acc, precision, recall]]
+    return pd.DataFrame(data, columns=col, index=["metrics"])
+
+
+def compute_entire_images_metrics(y_true, y_pred):
+    """
+    Compute pixel-wise metrics where arguments are lists of masks
+    :param y_true: see above
+    :param y_pred: see above
+    :return: Metrics for the masks
+    """
+    y_pred = np.array((y_pred >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0, dtype=int).ravel()
+    y_true = np.array(y_true.ravel(), dtype=int)
+    return compute_metrics(y_true, y_pred)
+
+
+# Old methods mentionned in the report but not used anymore
 def get_train_test_feature_augmentation(rotations=0, thetas=[], feature_augmentation=0, brightnesses=[]):
     """
-    Load training images and split them into a training and testing sets.
+    Load training images and split them into a training and testing sets. Augment their features.
+    This method is here to show what has been done but is not used in the project anymore
     """
     if not (len(brightnesses) == feature_augmentation and len(thetas) == rotations):
         raise ValueError('Wrong arguments')
-    images = load_features(TRAINING_SAMPLES)
-    groundtruths = load_labels(TRAINING_SAMPLES)
+    images = load_features(N_TRAIN_IMAGES)
+    groundtruths = load_labels(N_TRAIN_IMAGES)
 
     augmented = np.empty(shape=(len(images), TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 0))
     for i in range(feature_augmentation):
@@ -74,12 +110,11 @@ def get_train_test_feature_augmentation(rotations=0, thetas=[], feature_augmenta
 def get_train_test_manual_split(transformations=None):
     """
     Load training images and split them into a training and testing sets.
-    :param transformations: `list` used to specify with generated data to use when
-    data_augmentation is `True`. Leave to `None` to load everything.
-    Current possible values: `['mix', 'flip', 'shift', 'rotation']`
+    Puts only original images in the validation and test sets
+    This method is here to show what has been done but is not used in the project anymore
     """
-    images = load_features(TRAINING_SAMPLES)
-    groundtruths = load_labels(TRAINING_SAMPLES)
+    images = load_features(N_TRAIN_IMAGES)
+    groundtruths = load_labels(N_TRAIN_IMAGES)
     images_gen, groundtruths_gen = load_generated_data(transformations)
     X_train = images
     y_train = groundtruths
@@ -90,31 +125,10 @@ def get_train_test_manual_split(transformations=None):
     return X_train, X_test, y_train, y_test, validation_set
 
 
-def compute_metrics(y_true, y_pred):
-    """
-    Compute pixel-wise metrics on the predictions where arguments are 1d vectors.
-    :params y_test: 1d vector with the true labels
-    :params y_pred: 1d vectore with the predictions
-    """
-    f1 = f1_score(y_true, y_pred)
-    acc = accuracy_score(y_true, y_pred)
-    precision = precision_score(y_true, y_pred)
-    recall = recall_score(y_true, y_pred)
-    col = ['f1', 'acc', 'precision', 'recall']
-    data = [[f1, acc, precision, recall]]
-    return pd.DataFrame(data, columns=col, index=["metrics"])
-
-
-def compute_entire_images_metrics(y_true, y_pred):
-    """
-    Compute pixel-wise metrics where arguments are lists of masks
-    """
-    y_pred = np.array((y_pred >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0, dtype=int).ravel()
-    y_true = np.array(y_true.ravel(), dtype=int)
-    return compute_metrics(y_true, y_pred)
-
-
 def augment_features(images, new_brightness):
+    """
+    This method is here to show what has been done but is not used in the project anymore
+    """
     augmented = np.empty(shape=(0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3))
     for im in images:
         tmp = apply_brightness_shift(im, new_brightness)/255
@@ -123,6 +137,9 @@ def augment_features(images, new_brightness):
 
 
 def augment_data(images, theta, is_RGB):
+    """
+    This method is here to show what has been done but is not used in the project anymore
+    """
     shape = (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE, 3) if is_RGB else (0, TRAINING_IMG_SIZE, TRAINING_IMG_SIZE)
     augmented = np.empty(shape=shape)
     print(is_RGB, theta)

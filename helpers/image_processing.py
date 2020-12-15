@@ -1,26 +1,37 @@
+import os
 import numpy as np
 from .constants import *
 from tqdm import tqdm
-import os
 from PIL import Image
 
 
 def predict_patch(p):
+    """
+    For a given patch, predict road or background
+    :param p: Image patch
+    :return: 1 if the patch is a road patch, and 0 if it's a background patch
+    """
     return 1 if p.mean() > ROAD_THRESHOLD_PATCH else 0
 
 
-def concatenate_images(img1, img2):
-    return np.concatenate((img1, img2), axis=1)
-
-
 def prediction_to_rgb_image(prediction):
+    """
+    Transforms a greyscale prediction into an RBG image
+    :param prediction: Prediction to be transformed
+    :return: An RBG copy of it
+    """
     return np.stack((prediction, prediction, prediction), axis=-1)
 
 
-def apply_masks_on_test(num_images=50, opacity=100):
-    for i in tqdm(range(num_images), desc="Loading"):
-        test_image_path = TEST_IMAGES_DIR + 'test_{}/test_{}.png'.format(i + 1, i + 1)
-        mask_path = PREDICTIONS_SAVE_DIR + "test_{}.png".format(i + 1)
+def apply_masks_on_test(opacity=100):
+    """
+    Superimposes a transparent red mask with a prediction on test images
+    :param opacity: Opacity of the mask
+    """
+    for i in tqdm(range(N_TEST_IMAGES), desc="Loading"):
+        image_id = 'test_{}.png'.format(i + 1)
+        test_image_path = TEST_IMAGES_DIR + image_id
+        mask_path = PREDICTIONS_SAVE_DIR + image_id
         if os.path.isfile(test_image_path) and os.path.isfile(mask_path):
             img = Image.open(test_image_path)
             mask = Image.open(mask_path)
@@ -32,6 +43,13 @@ def apply_masks_on_test(num_images=50, opacity=100):
 
 
 def mask_image(img, mask, opacity=100):
+    """
+    Applies a transparent red mask onto an image
+    :param img: Original image
+    :param mask: Mask to be applied
+    :param opacity: Opacity of the mask (0-255)
+    :return: The image with the mask on it
+    """
     mask = mask.convert('RGBA')
     pixels = mask.getdata()
 

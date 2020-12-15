@@ -1,16 +1,21 @@
-import tensorflow as tf
-
-from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, BatchNormalization, Activation, Dense, Dropout
-from tensorflow.keras.layers import Conv2D, Conv2DTranspose
-from tensorflow.keras.layers import MaxPooling2D, GlobalMaxPool2D
-from tensorflow.keras.layers import concatenate, add
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, BatchNormalization, Activation, Dropout
+from tensorflow.keras.layers import Conv2D, Conv2DTranspose, MaxPooling2D, concatenate
 
 IMAGE_SIZE = 400
 
 
-def unet(n_filters=16, dropout=0.1, batchnorm=True, img_size=IMAGE_SIZE, kernel_size=3, feature_augmentation=1):
-    input_img = Input((img_size, img_size, 3*feature_augmentation), name='img')
+def unet(n_filters=16, dropout=0.1, batchnorm=True, img_size=IMAGE_SIZE, kernel_size=3):
+    """
+    Creates a unet model.
+    :param n_filters: Number of filters for each layer
+    :param dropout: Dropout rate
+    :param batchnorm: Boolean. Use of batch normalization
+    :param img_size: Size of the input image
+    :param kernel_size: Size of the kernels for the convolution
+    :return: The model
+    """
+    input_img = Input((img_size, img_size, 3), name='img')
     # Contracting Path
     pows = [1, 2, 4, 8]
     last_pow = 16

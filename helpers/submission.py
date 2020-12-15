@@ -1,43 +1,37 @@
-import os
-import numpy as np
 import matplotlib.image as mpimg
-import tensorflow as tf
-import matplotlib.pyplot as plt
 from datetime import datetime
-
-from .constants import *
-from .file_manipulation import *
+from .image_loading import *
 from .patch_labeling import *
 
 
-def predict_submissions(model, write_masks=True, submisison_file=None, patches_predicted=False):
+def predict_submissions(model, write_masks=True, submission_file=None, patches_predicted=False):
     """
     Given a model, runs the whole pipeline to create a file containing the label of each patch,
     ready for the AIcrowd submission.
     """
-    #Load 608x608 test images 
-    images608 = load_test_images()[:5]
+    # Load 608x608 test images
+    images608 = load_test_images()
     
-    #Split each of them into 4 400x400 images
+    # Split each of them into 4 400x400 images
     images400 = split_608_to_400(images608)
     
-    #Predict their mask
+    # Predict their mask
     print("Predicting test images...")
     masks400 = model.predict(images400).squeeze()
     
-    #Merge the 4 400x400 masks into one 608x608 by averaging the overlapping parts
+    # Merge the 4 400x400 masks into one 608x608 by averaging the overlapping parts
     masks608 = merge_masks400(masks400, patches_predicted=patches_predicted)
     
-    # binarize predictions into 0's and 1's
-    masks608 = np.asarray([(mask >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0 for mask in masks608])
+    # Binarize predictions into 0's and 1's
+    masks608 = (np.asarray(masks608) >= ROAD_THRESHOLD_PIXEL_PRED) * 1.0
  
-    #Convert mask to patch labels and write them into the file submission.csv
-    if not submisison_file:
+    # Convert mask to patch labels and write them into the file submission.csv
+    if not submission_file:
         if not os.path.isdir(SUBMISSIONS_DIR):
             os.mkdir(SUBMISSIONS_DIR)
         now = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-        submisison_file = f"{SUBMISSIONS_DIR}submission_{now}.csv"
-    make_prediction(masks608, filename=submisison_file, patches_predicted=patches_predicted)
+        submission_file = f"{SUBMISSIONS_DIR}submission_{now}.csv"
+    make_prediction(masks608, filename=submission_file, patches_predicted=patches_predicted)
     
     # Write the masks to folder
     if write_masks:
@@ -51,15 +45,15 @@ def split_608_to_400(images608):
     | 3 | 4 |
     :param images608: list of 608x608 images
     """
-    thres1 = TRAINING_IMG_SIZE #End of the top-left masks
-    thres2 = TEST_IMG_SIZE - TRAINING_IMG_SIZE #Start of the bottom right masks
+    thres1 = TRAINING_IMG_SIZE # End of the top-left masks
+    thres2 = TEST_IMG_SIZE - TRAINING_IMG_SIZE # Start of the bottom right masks
     
     images400 = []
     for img in images608:
-        images400.append(img[:thres1,:thres1])
-        images400.append(img[:thres1,thres2:])
-        images400.append(img[thres2:,:thres1])
-        images400.append(img[thres2:,thres2:])
+        images400.append(img[:thres1, :thres1])
+        images400.append(img[:thres1, thres2:])
+        images400.append(img[thres2:, :thres1])
+        images400.append(img[thres2:, thres2:])
     return np.asarray(images400)
 
 
@@ -72,34 +66,34 @@ def merge_masks400(masks400, patches_predicted=False):
     """
     if len(masks400) % 4 != 0:
         raise ValueError("Number of 400x400 predictions is not a mulitple of 4.")
-    if (patches_predicted):
+    if patches_predicted:
         train_size = int(TRAINING_IMG_SIZE/PATCH_SIZE)
         test_size = int(TEST_IMG_SIZE/PATCH_SIZE)
     else:
         train_size = TRAINING_IMG_SIZE
         test_size = TEST_IMG_SIZE
         
-    thres1 = train_size #End of the top-left masks
-    thres2 = test_size - train_size #Start of the bottom-right masks
+    thres1 = train_size # End of the top-left masks
+    thres2 = test_size - train_size # Start of the bottom-right masks
     thres3 = thres1 - thres2
     
     list_masks608 = []
     for idx in range(0, len(masks400), 4):
-        mask608 = np.empty((test_size, test_size), dtype='float32') #initialize a 608x608 mask
+        mask608 = np.empty((test_size, test_size), dtype='float32') # Initialize a 608x608 mask
         img1, img2, img3, img4 = [masks400[idx + i] for i in range(4)]
         
-        #Copy parts that belong to a single mask into the final mask, 
-        #These parts correspond to the corner of the final mask
+        # Copy parts that belong to a single mask into the final mask,
+        # These parts correspond to the corner of the final mask
         mask608[:thres2, :thres2] = img1[:thres2, :thres2]
         mask608[:thres2, thres1:] = img2[:thres2, thres3:]
         mask608[thres1:, :thres2] = img3[thres3:, :thres2]
         mask608[thres1:, thres1:] = img4[thres3:, thres3:]
         
-        #Average parts taht belong to multiple masks
+        # Average parts taht belong to multiple masks
         mask608[:thres2, thres2:thres1] = (img1[:thres2, thres2:] + img2[:thres2, :thres3]) / 2
         mask608[thres2:thres1, :thres2] = (img1[thres2:, :thres2] + img3[:thres3, :thres2]) / 2
         mask608[thres2:thres1, thres2:thres1] = (img1[thres2:, thres2:] + img2[thres2:, :thres3] +
-                                                img3[:thres3,thres2:] + img4[:thres3, :thres3]) / 4
+                                                 img3[:thres3,thres2:] + img4[:thres3, :thres3]) / 4
         mask608[thres2:thres1, thres1:] = (img2[thres2:, thres3:] + img4[:thres3, thres3:]) / 2
         mask608[thres1:, thres2:thres1] = (img3[thres3:, thres2:] + img4[thres3:, :thres3]) / 2
         list_masks608.append(mask608)
@@ -108,9 +102,12 @@ def merge_masks400(masks400, patches_predicted=False):
 
 def make_prediction(predicted_images, filename='submission.csv', patches_predicted=False):
     """
-    Create the submission csv containing the label of all the patches 
+    Create the submission csv containing the label of all the patches
     of each images in the test folder.
     :param predicted_images: list of 608x608 masks
+    :param filename: Name of the submission folder
+    :param patches_predicted: True if patches have been predicted instead of pixels
+    :return:
     """
     print(f"Creating submission csv at location {filename}")
     file = open(filename, "w")
@@ -118,7 +115,7 @@ def make_prediction(predicted_images, filename='submission.csv', patches_predict
     for image_id, pred in enumerate(predicted_images):
         patches_pred = make_patch_list(pred, patches_predicted)
         for (x, y, p) in patches_pred:
-            if (patches_predicted) :
+            if patches_predicted:
                 file.write(f"{image_id + 1:03}_{y*16}_{x*16},{p}\n")
             else:
                 file.write(f"{image_id + 1:03}_{y}_{x},{p}\n")
@@ -149,6 +146,6 @@ def write_predictions(predictions, folder=PREDICTIONS_SAVE_DIR):
         os.mkdir(folder)
     print(f"Writing predictions in folder {folder}")
     for i, pred in enumerate(predictions):
-         mpimg.imsave(f"{folder}test_{i+1}.png", pred, cmap='gray')
+        mpimg.imsave(f"{folder}test_{i+1}.png", pred, cmap='gray')
 
 
