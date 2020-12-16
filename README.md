@@ -55,57 +55,84 @@ deactivate
 
 ## Folder architecture
 
-This folder contains several python modules, categorized as follows :
+Our project contains many folders organized as follows:
 ```
 project
 │   README.md
 │   requirements.txt
 |   run.py    
+|   data_augmentation.ipynb
+|   pipeline.ipynb
 │
 └───data
-│   └───training
-│   └───test_set_images
-|   └───predictions
-│   └───generated
-|       └───flip
-│       └───rotation
-│       │   ...   
+│   └───train
+|   |   └───original
+|   |   └───generated
+|   |
+│   └───test
+|       └───original
+|       └───predictions 
 │   
 └───helpers
 |       colab.py
 |       constants.py
-|       file_manipulation.py
+|       image_loading.py
 │        ...
 |
-└───model_save
+└───models
+│       unet.py
+│       cnn_patch_prediction.py
+|
+└───saved_models
+|       best_cnn
 |       final_model
-|
-└───notebooks
-│       create_submission.ipynb
-│       data_augmentation.ipynb
-|       ...
-|
-└───assets
-│       ...
+|       
 ```
 
 Here are the main subfolders description:
 <details open>
-    <summary>data</summary>
+    <summary>root</summary>
     <br/>
-    ajsdkskadjakd
+    Here are the main files:
+    <ul>
+    <li> run.py reproduces our best submission on AICrowd
+    <li> pipeline.ipynb illustrates our training pipeline from loading data, training, validating to creating the submission file.
+    <li> data_augmentation.ipynb shows how we generated new data from the original ones.
+    <li> README.md
+    <li> requirements.txt
+    </ul>
+</details>
+
+<details>
+    <summary>data</summary>
+    <br>
+    The data folder contains the training and test images. The first is composed of the 100 original images as well as the artificially created ones, in total around 1000. The test set folder contains two subfolders: the original ones with the images used for the AICrowd submission and the predictions folder, containing the predicted outputs as well as the masks superposed on the original images, to give a qualitative evaluation of our predictions.
+
 </details>
 
 <details>
     <summary>helpers</summary>
     <br>
-    asdasda
-</details>
-<details>
-    <summary>model_save</summary>
+    This folder contains the python scripts used during the pipeline or to run predictions.
     <br>
-    asdas
 </details>
+
+<details>
+    <summary>models</summary>
+    <br>
+    models contains two files implementing the architecture our models:
+    <ul>
+    <li> best_cnn corresponds to the patch-wise CNN 
+    <li> final_model is in fact the U-Net architecture that was used for our best submission.
+    </ul>
+</details>
+
+<details>
+    <summary>saved_models</summary>
+    <br>
+    saved_models is the folder used to store the trained models using the Keras module from Tensorflow.
+</details>
+
 
 ## Training pipeline
 
@@ -122,7 +149,7 @@ According to the paper that first described the U-Net architecture [[1]](https:/
 * flip
 * combination of the previous transformations
 
-The script used to generate new data is illustrated in the `data_augmentation.ipynb` notebook, using the Tensorflow preprocessing class `ImageDataGenerator`. The generated images can be found in the `data/generated` folder.
+The script used to generate new data is illustrated in the `data_augmentation.ipynb` notebook, using the Tensorflow preprocessing class `ImageDataGenerator`. The generated images can be found in the `data/training/generated` folder.
 
 ### Training
 
